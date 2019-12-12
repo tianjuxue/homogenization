@@ -1,1 +1,1 @@
-# bayes_homo
+# Neural Network Homogenization
