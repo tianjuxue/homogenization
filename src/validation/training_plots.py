@@ -197,12 +197,4 @@ if __name__ == '__main__':
     plt.show()
     # fig.savefig("energy.pdf", bbox_inches='tight')
     exit()
-
-
-
-
-
-
-
-
   

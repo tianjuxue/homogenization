@@ -77,6 +77,7 @@ class Metamaterial(PDE):
         self.mesh = mesh
 
         # print(mesh.num_cells())
+        # print(mesh.num_vertices())
         # exit()
 
 

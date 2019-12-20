@@ -241,7 +241,7 @@ if __name__ == '__main__':
 
     anneal_factors = np.linspace(0, 1, 11)
     force = []
-    disp = -0.125
+    disp = 0.2
 
 
     for i, factor in enumerate(anneal_factors): 
@@ -267,8 +267,8 @@ if __name__ == '__main__':
         # initial_exp = Expression(("traverse*sin(pi/L*x[1])", "x[1]*disp"), traverse=0.3*args.n_macro*args.L0, L=args.n_macro*args.L0, disp=disp, degree=3)
         u.vector().set_local(guess)
         # initial_exp = NegSinExpression(0.0)
-        initial_exp = KinkExpression(0.2)
-        u = interpolate(initial_exp, V)
+        # initial_exp = KinkExpression(0.2)
+        # u = interpolate(initial_exp, V)
 
         xi_exp = XiExpression()
         xi = interpolate(xi_exp, V)
@@ -292,8 +292,8 @@ if __name__ == '__main__':
         C00 = C[0, 0]
         C01 = C[0, 1]   
         C11 = C[1, 1]
-        # C_list = [C00, C01, C11, xi[0], xi[1]]
-        C_list = [C00, C01, C11, -0.2, 0.2]
+        C_list = [C00, C01, C11, xi[0], xi[1]]
+        # C_list = [C00, C01, C11, -0.2, 0.2]
         # energy = ((shear_mod / 2) * (Jinv * (I1 + 1) - 3) + (bulk_mod / 2) * (J - 1)**2) 
         energy = manual_nn(C_list) + 0*(J - 1)**2
 

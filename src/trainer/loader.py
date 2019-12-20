@@ -137,13 +137,13 @@ def run_trainer(args, Xin, Xout, lr, bsize, hidden_dim):
     nTest = len(Xt_in)
     fAv = fAvTest = f_dev = f_dev_test = 0. 
 
-    model = Net(args)    
+    model = Linear(args)    
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.wd)
     
     if not os.path.exists(MODEL_PATH):
         os.mkdir(MODEL_PATH)
     
-    epoch_number = 500
+    epoch_number = 1000
     log_interval = 100
     step_number = nTrain//args.batch_ize
 
@@ -183,13 +183,13 @@ def run_trainer(args, Xin, Xout, lr, bsize, hidden_dim):
 
         if (ep_num + 1)%log_interval == 0:
             print('\nepoch:', ep_num + 1)           
-            epoch.append(step)
+            epoch.append(ep_num)
             train_mse = compute_MSE(model, Xin, Xout)
             test_mse = compute_MSE(model, Xt_in, Xt_out)            
             print("MSE for training", train_mse, "MSE for testing", test_mse)
             mse_train.append(train_mse)
             mse_test.append(test_mse) 
-            torch.save(model, MODEL_PATH + '/model_step_'+str(step))
+            # torch.save(model, MODEL_PATH + '/model_step_'+str(ep_num))
             fAv = fAvTest = f_dev = f_dev_test = 0.
 
     print('\n\n')
