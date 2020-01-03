@@ -124,8 +124,8 @@ if __name__ == '__main__':
     # exit()
 
 
-    # model_path = 'saved_checkpoints_tmp/normal'
-    model_path = args.checkpoints_path_shear + '/model_step_' + str(1000*49)
+    # model_path = 'saved_checkpoints_tmp/new_universal'
+    model_path = args.checkpoints_path_shear + '/model_step_' + str(499)
     network =  torch.load(model_path)
 
    
@@ -169,29 +169,46 @@ if __name__ == '__main__':
         stress_true_list.append(stress_true_sub_list)
 
 
-    fig, axes = plt.subplots(nrows=2, ncols=3)
+    # fig, axes = plt.subplots(nrows=2, ncols=3)
+    # for i, normal_shear in enumerate(normal_shear_label):
+    #     for j, energy_stress in enumerate(energy_stress_label):
+    #         ax = axes[j, i]
+    #         if energy_stress == 'energy':
+    #             ax.title.set_text(normal_shear)
+    #         ax.set(xlabel='strain', ylabel=energy_stress)
+    #         if energy_stress == 'energy':
+    #             for k, pore in enumerate(pore_label):
+    #                 ax.plot(x_vals_list[i], energy_true_list[i][k], '-', color=pore_color[k], label='DNS '+ pore) 
+    #                 ax.plot(x_vals_list[i], energy_nn_list[i][k], ':', color=pore_color[k], label='NN '+ pore)             
+    #         else:
+    #             for k, pore in enumerate(pore_label):
+    #                 ax.plot(x_vals_list[i], stress_true_list[i][k], '-', color=pore_color[k], label='DNS '+ pore) 
+    #                 ax.plot(x_vals_list[i], stress_nn_list[i][k], ':', color=pore_color[k], label='NN '+ pore)              
 
+    #         if energy_stress == 'energy' and i == 1:
+    #             ax.legend(loc='upper right')
+    #         elif energy_stress == 'stress' and i == 1:
+    #             ax.legend(loc='lower right')
+    #         else:
+    #             ax.legend(loc='upper left')
+
+ 
     for i, normal_shear in enumerate(normal_shear_label):
-        for j, energy_stress in enumerate(energy_stress_label):
-            ax = axes[j, i]
-            if energy_stress == 'energy':
-                ax.title.set_text(normal_shear)
-            ax.set(xlabel='strain', ylabel=energy_stress)
-            if energy_stress == 'energy':
-                for k, pore in enumerate(pore_label):
-                    ax.plot(x_vals_list[i], energy_true_list[i][k], '-', color=pore_color[k], label='DNS '+ pore) 
-                    ax.plot(x_vals_list[i], energy_nn_list[i][k], ':', color=pore_color[k], label='NN '+ pore)             
-            else:
-                for k, pore in enumerate(pore_label):
-                    ax.plot(x_vals_list[i], stress_true_list[i][k], '-', color=pore_color[k], label='DNS '+ pore) 
-                    ax.plot(x_vals_list[i], stress_nn_list[i][k], ':', color=pore_color[k], label='NN '+ pore)              
+        plt.figure(i)
+        plt.tick_params(labelsize=14)
+        print("\n")
+        MSE = 0
+        for k, pore in enumerate(pore_label):
+            plt.plot(x_vals_list[i], energy_true_list[i][k], '-', color=pore_color[k], label='DNS '+ pore) 
+            plt.plot(x_vals_list[i], energy_nn_list[i][k], ':', color=pore_color[k], label='NN '+ pore)  
+            energy_true = np.asarray(energy_true_list[i][k]).flatten()   
+            energy_nn = np.asarray(energy_nn_list[i][k]).flatten()     
+            MSE += ((energy_true - energy_nn)**2).sum()
+            # print(energy_true)
+            # print(energy_nn)
+        MSE /= len(2*x_vals_list[i])
+        print("MSE is {} for case {}".format(MSE, i))
 
-            if energy_stress == 'energy' and i == 1:
-                ax.legend(loc='upper right')
-            elif energy_stress == 'stress' and i == 1:
-                ax.legend(loc='lower right')
-            else:
-                ax.legend(loc='upper left')
 
 
     plt.show()

@@ -20,7 +20,7 @@ def run_and_save(disp, pore_flag, name):
     generator.args.fluctuation = False
     generator.args.F_list_fixed = [[-0., -0.], [0., disp]]
     generator.args.gradient = False if pore_flag < 2 else True
-    generator.anneal_factors = np.linspace(0, 1, 11)
+    generator.anneal_factors = np.linspace(0, 1, 9)
 
     generator.def_grad = np.array([0, 0, 0, disp])
     generator.void_shape = np.array([-0., 0.]) if pore_flag == 0 else np.array([-0.2, 0.2])

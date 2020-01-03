@@ -26,14 +26,14 @@ if __name__ == '__main__':
     NN_force_com_pore1 = np.load(path_prefix_force + 'NN_force_com_pore1.npy')
     NN_force_ten_pore1 = np.load(path_prefix_force + 'NN_force_ten_pore1.npy')
 
-    strain_ten = np.linspace(0,  0.125, len(DNS_energy_ten_pore0))
-    strain_com = np.linspace(0, -0.125, len(DNS_energy_com_pore0))
+    strain_ten = np.linspace(0,  0.1, len(DNS_energy_ten_pore0))
+    strain_com = np.linspace(0, -0.1, len(DNS_energy_com_pore0))
 
     fig = plt.figure(0)
     plt.tick_params(labelsize=14)
-    plt.xlabel('strain')
-    plt.ylabel('energy')
-    energy_norm = 16
+    # plt.xlabel('strain')
+    # plt.ylabel('energy')
+    energy_norm = 16/10
     plt.plot(strain_com, (DNS_energy_com_pore0 - DNS_energy_com_pore0[0]) / energy_norm, '-', color='blue', label='DNS ' + r'$\xi_a$')
     plt.plot(strain_ten, (DNS_energy_ten_pore0 - DNS_energy_ten_pore0[0]) / energy_norm, '-', color='blue', label='DNS ' + r'$\xi_a$')
     plt.plot(strain_com, (NN_energy_com_pore0 - NN_energy_com_pore0[0]) / energy_norm, '--', color='blue', label='NN ' + r'$\xi_a$')
@@ -46,8 +46,8 @@ if __name__ == '__main__':
 
     fig = plt.figure(1)
     plt.tick_params(labelsize=14)
-    plt.xlabel('strain')
-    plt.ylabel('force')
+    # plt.xlabel('strain')
+    # plt.ylabel('force')
     force_norm = 4
     plt.plot(strain_com, (DNS_force_com_pore0 - DNS_force_com_pore0[0]) / force_norm, '-', color='blue', label='DNS ' + r'$\xi_a$')
     plt.plot(strain_ten, (DNS_force_ten_pore0 - DNS_force_ten_pore0[0]) / force_norm, '-', color='blue', label='DNS ' + r'$\xi_a$')

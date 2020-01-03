@@ -327,7 +327,6 @@ class GeneratorDummy(Generator):
         energy = (shear_mod / 2) * (Jinv * I1 - d) + (bulk_mod / 2) * (J - 1)**2
 
         # print((Jinv * I1 - d))
-
         return energy
 
 

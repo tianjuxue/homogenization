@@ -13,7 +13,7 @@ from .. import arguments
 
 # model_path = 'saved_checkpoints_tmp/normal' is the way to go
 # for universal case run
-# python -m src.validation.deploy --relaxation_parameter 0.005 --max_newton_iter 3000
+# python -m src.validation.deploy_nn --relaxation_parameter 0.1 --max_newton_iter 3000
 
 
 class Left(SubDomain):
@@ -265,10 +265,12 @@ def run_and_save(factors, disp, pore_flag, name):
 if __name__ == '__main__':
     args = arguments.args
     args.n_macro = 8
+    args.relaxation_parameter = 0.1
+    args.max_newton_iter = 3000
 
     # energy, force, u = run(args, disp=-0., pore_flag=0)
 
-    factors = np.linspace(0, 1, 11)
+    factors = np.linspace(0, 1, 9)
     run_and_save(factors, disp=-0.125, pore_flag=0, name='NN')
     run_and_save(factors, disp=-0.125, pore_flag=1, name='NN')
     run_and_save(factors, disp=0.125, pore_flag=0, name='NN')
