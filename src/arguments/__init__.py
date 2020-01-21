@@ -31,8 +31,13 @@ parser.add_argument(
 args = parser.parse_args()
 
 from fenics import *
+import numpy as np
+import sys
 
 if args.verbose:
     set_log_level(20)
 else:
     set_log_level(30)
+
+np.set_printoptions(threshold=sys.maxsize, linewidth=1000, suppress=True)
+np.set_printoptions(precision=3)

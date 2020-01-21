@@ -209,14 +209,18 @@ if __name__ == '__main__':
 
     trainer = Trainer() 
 
-    DATA_PATH_shear1 = 'saved_data_integrated_regular_periodic_shear1'
+    # DATA_PATH_shear1 = 'saved_data_integrated_regular_periodic_shear1'
     DATA_PATH_shear2 = 'saved_data_integrated_regular_periodic_shear2'  
     DATA_PATH_normal = 'saved_data_integrated_regular_periodic_normal'
 
-    Xin_shear1, Xout_shear1 = trainer.load_data(DATA_PATH_shear1)
+    # Xin_shear1, Xout_shear1 = trainer.load_data(DATA_PATH_shear1)
     Xin_shear2, Xout_shear2 = trainer.load_data(DATA_PATH_shear2)    
     Xin_normal, Xout_normal = trainer.load_data(DATA_PATH_normal)
  
+    print(Xin_shear2.shape)
+    print(Xin_normal.shape)
+    exit()
+
     Xin = np.concatenate((Xin_shear2, Xin_normal))
     Xout = np.concatenate((Xout_shear2, Xout_normal))
 
