@@ -62,5 +62,3 @@ if __name__ == '__main__':
 
     plt.show()
     # fig.savefig("gradient_validation.pdf", bbox_inches='tight')
-
-
