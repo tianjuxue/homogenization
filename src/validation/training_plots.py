@@ -8,6 +8,7 @@ import torch
 from ..trainer.loader import Net
 from ..trainer.loader import Trainer
 
+
 def neohookean(F_fake, flag_pore_shape):
 
     I = torch.eye(2)
@@ -24,9 +25,10 @@ def neohookean(F_fake, flag_pore_shape):
         xi_1 = torch.tensor(-0.2)
         xi_2 = torch.tensor(0.2)
 
-    input_tensor = torch.stack([C_11, C_12, C_22, xi_1, xi_2]) 
+    input_tensor = torch.stack([C_11, C_12, C_22, xi_1, xi_2])
 
     return input_tensor
+
 
 def true_energy(x_vals, flag_pore_shape, flag_normal_shear):
 
@@ -39,25 +41,28 @@ def true_energy(x_vals, flag_pore_shape, flag_normal_shear):
 
     if flag_normal_shear == 1:
         generator.args.F_list_fixed = [[0, 0], [0., x_val]]
-        generator.def_grad = np.array([0, 0, 0, x_val])  
-        energy_density, force = generator._anealing_solver_fluctuation(return_force=True)
+        generator.def_grad = np.array([0, 0, 0, x_val])
+        energy_density, force = generator._anealing_solver_fluctuation(
+            return_force=True)
         energy = energy_density
-        stress = [f[1][1] for f in force]           
+        stress = [f[1][1] for f in force]
     else:
         generator.args.F_list_fixed = [[0, x_val], [0., 0]]
         generator.def_grad = np.array([0, x_val, 0, 0])
-        energy_density, force = generator._anealing_solver_fluctuation(return_force=True)
+        energy_density, force = generator._anealing_solver_fluctuation(
+            return_force=True)
         energy = energy_density
-        stress = [f[0][1] for f in force] 
+        stress = [f[0][1] for f in force]
 
         # print(energy_density)
-        # print(generator.probe_all)        
+        # print(generator.probe_all)
         # print(force)
 
     energy = np.asarray(energy)
     stress = np.asarray(stress)
 
     return energy, stress
+
 
 def nn_energy(x_vals, flag_pore_shape, flag_normal_shear):
 
@@ -94,15 +99,13 @@ def nn_energy(x_vals, flag_pore_shape, flag_normal_shear):
 
 
 def plot_energy(x_vals, energy_nn, energy_true):
-    plt.plot(x_vals, energy_nn, ':', color='b',label='energy_nn_p1_normal') 
-    plt.plot(x_vals, energy_true, '-', color='b', label='energy_p1_normal')          
+    plt.plot(x_vals, energy_nn, ':', color='b', label='energy_nn_p1_normal')
+    plt.plot(x_vals, energy_true, '-', color='b', label='energy_p1_normal')
 
 
 if __name__ == '__main__':
 
-
     args = arguments.args
-    PATH = args.data_path_integrated_regular
     generator = Generator(args)
 
     generator.args.relaxation_parameter = 0.1
@@ -111,7 +114,7 @@ if __name__ == '__main__':
     generator.args.n_cells = 2
     generator.args.metamaterial_mesh_size = 15
     generator.args.fluctuation = True
-    generator.void_shape = np.array([-0., 0.]) 
+    generator.void_shape = np.array([-0., 0.])
     generator.anneal_factors = np.linspace(0, 1, 11)
 
     # generator.args.F_list_fixed = [[0., 0.1], [0.1, 0.125]]
@@ -121,14 +124,13 @@ if __name__ == '__main__':
     # print(force)
     # exit()
 
+    # model_path = args.checkpoints_path + '/model_step_' + str(499)
+    model_path = 'saved_checkpoints_tmp/new_universal'
+    network = torch.load(model_path)
 
-    # model_path = 'saved_checkpoints_tmp/new_universal'
-    model_path = args.checkpoints_path_shear + '/model_step_' + str(499)
-    network =  torch.load(model_path)
-
-   
     flag_pore_shape_list = [1, 2]
-    x_vals_list = [np.linspace(0, 0.2, 11), np.linspace(0, -0.2, 11), np.linspace(0, 0.2, 11)]
+    x_vals_list = [np.linspace(0, 0.2, 11), np.linspace(
+        0, -0.2, 11), np.linspace(0, 0.2, 11)]
     flag_normal_shear_list = [1, 1, 2]
 
     energy_nn_list = []
@@ -136,12 +138,10 @@ if __name__ == '__main__':
     energy_true_list = []
     stress_true_list = []
 
-
     normal_shear_label = ['tensile', 'compressive', 'shear']
     energy_stress_label = ['energy', 'stress']
-    pore_label = ['p1', 'p2']  
+    pore_label = ['p1', 'p2']
     pore_color = ['b', 'r']
- 
 
     for i, flag_normal_shear in enumerate(flag_normal_shear_list):
         energy_nn_sub_list = []
@@ -150,22 +150,21 @@ if __name__ == '__main__':
         stress_true_sub_list = []
 
         for j, flag_pore_shape in enumerate(flag_pore_shape_list):
-            energy_nn, stress_nn = nn_energy(x_vals=x_vals_list[i], 
-                                             flag_pore_shape=flag_pore_shape, 
+            energy_nn, stress_nn = nn_energy(x_vals=x_vals_list[i],
+                                             flag_pore_shape=flag_pore_shape,
                                              flag_normal_shear=flag_normal_shear)
-            energy_true, stress_true = true_energy(x_vals=x_vals_list[i], 
-                                                   flag_pore_shape=flag_pore_shape, 
-                                                   flag_normal_shear=flag_normal_shear) 
-            energy_nn_sub_list.append(energy_nn)  
-            energy_true_sub_list.append(energy_true)      
-            stress_nn_sub_list.append(stress_nn)  
-            stress_true_sub_list.append(stress_true)  
+            energy_true, stress_true = true_energy(x_vals=x_vals_list[i],
+                                                   flag_pore_shape=flag_pore_shape,
+                                                   flag_normal_shear=flag_normal_shear)
+            energy_nn_sub_list.append(energy_nn)
+            energy_true_sub_list.append(energy_true)
+            stress_nn_sub_list.append(stress_nn)
+            stress_true_sub_list.append(stress_true)
 
         energy_nn_list.append(energy_nn_sub_list)
         energy_true_list.append(energy_true_sub_list)
         stress_nn_list.append(stress_nn_sub_list)
         stress_true_list.append(stress_true_sub_list)
-
 
     # fig, axes = plt.subplots(nrows=2, ncols=3)
     # for i, normal_shear in enumerate(normal_shear_label):
@@ -176,12 +175,12 @@ if __name__ == '__main__':
     #         ax.set(xlabel='strain', ylabel=energy_stress)
     #         if energy_stress == 'energy':
     #             for k, pore in enumerate(pore_label):
-    #                 ax.plot(x_vals_list[i], energy_true_list[i][k], '-', color=pore_color[k], label='DNS '+ pore) 
-    #                 ax.plot(x_vals_list[i], energy_nn_list[i][k], ':', color=pore_color[k], label='NN '+ pore)             
+    #                 ax.plot(x_vals_list[i], energy_true_list[i][k], '-', color=pore_color[k], label='DNS '+ pore)
+    #                 ax.plot(x_vals_list[i], energy_nn_list[i][k], ':', color=pore_color[k], label='NN '+ pore)
     #         else:
     #             for k, pore in enumerate(pore_label):
-    #                 ax.plot(x_vals_list[i], stress_true_list[i][k], '-', color=pore_color[k], label='DNS '+ pore) 
-    #                 ax.plot(x_vals_list[i], stress_nn_list[i][k], ':', color=pore_color[k], label='NN '+ pore)              
+    #                 ax.plot(x_vals_list[i], stress_true_list[i][k], '-', color=pore_color[k], label='DNS '+ pore)
+    #                 ax.plot(x_vals_list[i], stress_nn_list[i][k], ':', color=pore_color[k], label='NN '+ pore)
 
     #         if energy_stress == 'energy' and i == 1:
     #             ax.legend(loc='upper right')
@@ -190,26 +189,24 @@ if __name__ == '__main__':
     #         else:
     #             ax.legend(loc='upper left')
 
- 
     for i, normal_shear in enumerate(normal_shear_label):
         plt.figure(i)
         plt.tick_params(labelsize=14)
         print("\n")
         MSE = 0
         for k, pore in enumerate(pore_label):
-            plt.plot(x_vals_list[i], energy_true_list[i][k], '-', color=pore_color[k], label='DNS '+ pore) 
-            plt.plot(x_vals_list[i], energy_nn_list[i][k], ':', color=pore_color[k], label='NN '+ pore)  
-            energy_true = np.asarray(energy_true_list[i][k]).flatten()   
-            energy_nn = np.asarray(energy_nn_list[i][k]).flatten()     
+            plt.plot(x_vals_list[i], energy_true_list[i][
+                     k], '-', color=pore_color[k], label='DNS ' + pore)
+            plt.plot(x_vals_list[i], energy_nn_list[i][k],
+                     ':', color=pore_color[k], label='NN ' + pore)
+            energy_true = np.asarray(energy_true_list[i][k]).flatten()
+            energy_nn = np.asarray(energy_nn_list[i][k]).flatten()
             MSE += ((energy_true - energy_nn)**2).sum()
             # print(energy_true)
             # print(energy_nn)
-        MSE /= len(2*x_vals_list[i])
+        MSE /= len(2 * x_vals_list[i])
         print("MSE is {} for case {}".format(MSE, i))
-
-
 
     plt.show()
     # fig.savefig("energy.pdf", bbox_inches='tight')
     exit()
-  

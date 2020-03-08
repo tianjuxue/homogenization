@@ -33,7 +33,8 @@ if __name__ == '__main__':
     plt.tick_params(labelsize=14)
     # plt.xlabel('strain')
     # plt.ylabel('energy')
-    energy_norm = 16/10
+    # L=0.5, n_cells=8, total area=(L*n_cells)^2=16
+    energy_norm = 16
     plt.plot(strain_com, (DNS_energy_com_pore0 - DNS_energy_com_pore0[0]) / energy_norm, '-', color='blue', label='DNS ' + r'$\xi_a$')
     plt.plot(strain_ten, (DNS_energy_ten_pore0 - DNS_energy_ten_pore0[0]) / energy_norm, '-', color='blue', label='DNS ' + r'$\xi_a$')
     plt.plot(strain_com, (NN_energy_com_pore0 - NN_energy_com_pore0[0]) / energy_norm, '--', color='blue', label='NN ' + r'$\xi_a$')

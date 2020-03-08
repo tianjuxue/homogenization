@@ -11,32 +11,33 @@ import scipy.optimize as opt
 from ..trainer.loader import Net
 from .. import arguments
 
-# model_path = 'saved_checkpoints_tmp/normal' is the way to go
-# for universal case run
-# python -m src.validation.deploy_nn --relaxation_parameter 0.1 --max_newton_iter 3000
-
 
 class Left(SubDomain):
+
     def inside(self, x, on_boundary):
         return on_boundary and near(x[0], 0)
 
 
 class Right(SubDomain):
+
     def inside(self, x, on_boundary):
         return on_boundary and near(x[0], args.n_macro * args.L0)
 
 
 class Bottom(SubDomain):
+
     def inside(self, x, on_boundary):
         return on_boundary and near(x[1], 0)
 
 
 class Top(SubDomain):
+
     def inside(self, x, on_boundary):
         return on_boundary and near(x[1], args.n_macro * args.L0)
 
 
 class KinkExpression(UserExpression):
+
     def __init__(self, param, disp):
         # Construction method of base class has to be called first
         super(KinkExpression, self).__init__()
@@ -57,8 +58,9 @@ class KinkExpression(UserExpression):
 
 
 class XiExpression(UserExpression):
+
     def eval(self, values, x):
-        L = args.n_macro*args.L0
+        L = args.n_macro * args.L0
         values[0] = x[1] / L * -0.2
         values[1] = x[1] / L * 0.2
 
@@ -94,7 +96,6 @@ def layer(x, weights, bias, id):
 def manual_nn(network, x):
     x = layer(x, network.fc1.weight, network.fc1.bias, 1)
     x = layer(x, network.fc2.weight, network.fc2.bias, 2)
-    # x = layer(x, network.fc3.weight, network.fc3.bias, 3)
     assert (len(x) == 1)
     return x[0]
 
@@ -123,14 +124,15 @@ def get_energy(u, pore_flag, network, V):
     return energy, stress
 
 
-def run(args, disp, pore_flag):
+def homogenization(args, disp, pore_flag):
     # pore_flag = 0 means pore A
     # pore_flag = 1 means pore B
     # pore_flag = 2 means mixed
 
-    print("Start to solve with disp={:.6f} and pore_flag={}".format(disp, pore_flag))
-    # model_path = args.checkpoints_path_shear + '/model_step_' + str(499)
-    model_path = 'saved_checkpoints_tmp/new_universal'
+    print("Start to solve with disp={:.6f} and pore_flag={}".format(
+        disp, pore_flag))
+    model_path = args.checkpoints_path + '/model_step_999'
+    # model_path = 'saved_checkpoints_tmp/new_universal'
     network = torch.load(model_path)
 
     parameters["form_compiler"]["cpp_optimize"] = True
@@ -143,7 +145,8 @@ def run(args, disp, pore_flag):
 
     # Create mesh and define function space
     mesh = UnitSquareMesh(10, 10)
-    mesh = RectangleMesh(Point(0, 0), Point(args.n_macro * args.L0, args.n_macro * args.L0), 10, 10)
+    mesh = RectangleMesh(Point(0, 0), Point(
+        args.n_macro * args.L0, args.n_macro * args.L0), 10, 10)
 
     V = VectorFunctionSpace(mesh, "Lagrange", 1)
 
@@ -161,10 +164,11 @@ def run(args, disp, pore_flag):
 
     normal = FacetNormal(mesh)
     ds = Measure("ds")(subdomain_data=sub_domains)
- 
+
     # Define Dirichlet boundary (x = 0 or x = 1)
     c = Expression(("0.0", "0.0"), degree=1)
-    r = Expression(("0.0", "disp"), disp=disp * args.n_macro * args.L0, degree=1)
+    r = Expression(("0.0", "disp"), disp=disp *
+                   args.n_macro * args.L0, degree=1)
 
     bcb = DirichletBC(V, c, bottom)
     bct = DirichletBC(V, r, top)
@@ -178,9 +182,8 @@ def run(args, disp, pore_flag):
     energy, stress = get_energy(u, pore_flag, network, V)
     energy_ref = assemble(energy * dx)
     # print("Total energy (reference) is", energy_ref)
-    force_ref = assemble(dot(stress, normal)[1]*ds(4))
+    force_ref = assemble(dot(stress, normal)[1] * ds(4))
     # print("Total force (reference) is", force_ref)
-
 
     initial_value = 0
     if disp < 0 and pore_flag == 1:
@@ -207,23 +210,22 @@ def run(args, disp, pore_flag):
 
     parameters["form_compiler"]["cpp_optimize"] = True
 
-    ffc_options = {"optimize": True, \
-                   "eliminate_zeros": True, \
-                   "precompute_basis_const": True, \
+    ffc_options = {"optimize": True,
+                   "eliminate_zeros": True,
+                   "precompute_basis_const": True,
                    "precompute_ip_const": True}
 
     solve(F == 0, u, bcs, J=J,
-            solver_parameters=solver_args,
-            form_compiler_parameters=ffc_options)
+          solver_parameters=solver_args,
+          form_compiler_parameters=ffc_options)
 
     energy_def = assemble(energy * dx)
 
     # print("Total energy (deformed) is", energy_def)
     # print("Average energy density is",
     #       assemble(energy * dx) / (args.n_macro * args.L0)**2)
-    force_def = assemble(dot(stress, normal)[1]*ds(4))
+    force_def = assemble(dot(stress, normal)[1] * ds(4))
     # print("Total force (deformed) is", force_def)
-
 
     energy_rel = energy_def - energy_ref
     force_rel = force_def - force_ref
@@ -237,12 +239,13 @@ def run(args, disp, pore_flag):
 
     return energy_rel, force_rel, u
 
+
 def run_and_save(factors, disp, pore_flag, name):
     start = time.time()
     energy_list = []
     force_list = []
     for factor in factors:
-        energy, force, u = run(args, disp*factor, pore_flag)
+        energy, force, u = homogenization(args, disp * factor, pore_flag)
         energy_list.append(energy)
         force_list.append(force)
 
@@ -250,11 +253,11 @@ def run_and_save(factors, disp, pore_flag, name):
     time_elapsed = end - start
 
     deform_info = 'com' if disp < 0 else 'ten'
-    np.save('plots/new_data/numpy/energy/' + name + '_energy_' + deform_info + 
+    np.save('plots/new_data/numpy/energy/' + name + '_energy_' + deform_info +
             '_pore' + str(pore_flag) + '.npy', np.asarray(energy_list))
-    np.save('plots/new_data/numpy/force/' + name + '_force_' + deform_info + 
+    np.save('plots/new_data/numpy/force/' + name + '_force_' + deform_info +
             '_pore' + str(pore_flag) + '.npy', np.asarray(force_list))
-    np.save('plots/new_data/numpy/time/' + name + '_time_' + deform_info + 
+    np.save('plots/new_data/numpy/time/' + name + '_time_' + deform_info +
             '_pore' + str(pore_flag) + '.npy', np.asarray(time_elapsed))
 
     print('energy_list', energy_list)
@@ -262,16 +265,18 @@ def run_and_save(factors, disp, pore_flag, name):
     print('time_elapsed', time_elapsed)
     print('\n')
 
-if __name__ == '__main__':
-    args = arguments.args
-    args.n_macro = 8
-    args.relaxation_parameter = 0.1
-    args.max_newton_iter = 3000
 
-    # energy, force, u = run(args, disp=-0., pore_flag=0)
-
+def run():
     factors = np.linspace(0, 1, 9)
     run_and_save(factors, disp=-0.125, pore_flag=0, name='NN')
     run_and_save(factors, disp=-0.125, pore_flag=1, name='NN')
     run_and_save(factors, disp=0.125, pore_flag=0, name='NN')
     run_and_save(factors, disp=0.125, pore_flag=1, name='NN')
+
+if __name__ == '__main__':
+    args = arguments.args
+    args.n_macro = 8
+    args.relaxation_parameter = 0.1
+    args.max_newton_iter = 2000
+
+    energy, force, u = homogenization(args, disp=-0.1, pore_flag=1)

@@ -56,7 +56,7 @@ def plot_shear():
     plt.xticks(np.arange(min(H12), max(H12) + 1,
                          step=(max(H12) - min(H12)) / 4))
     plt.tick_params(labelsize=14)
-    plt.plot(H12, energy, '-*', label='energy')
+    plt.plot(H12, 10*energy, '-*', label='energy')
     plt.show()
     fig.savefig("plots/new_data/images/shear.pdf", bbox_inches='tight')
 
@@ -69,7 +69,7 @@ def plot_normal():
     plt.xticks(np.arange(min(H11), max(H11) + 1,
                          step=(max(H11) - min(H11)) / 4))
     plt.tick_params(labelsize=14)
-    plt.plot(H11, np.flip(energy), '-*', label='energy')
+    plt.plot(H11, 10*np.flip(energy), '-*', label='energy')
     plt.show()
     fig.savefig("plots/new_data/images/normal.pdf", bbox_inches='tight')
 

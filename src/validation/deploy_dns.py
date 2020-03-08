@@ -8,6 +8,7 @@ import fenics as fa
 import matplotlib.pyplot as plt
 import time
 
+
 def run_and_save(disp, pore_flag, name):
     start = time.time()
 
@@ -23,22 +24,23 @@ def run_and_save(disp, pore_flag, name):
     generator.anneal_factors = np.linspace(0, 1, 9)
 
     generator.def_grad = np.array([0, 0, 0, disp])
-    generator.void_shape = np.array([-0., 0.]) if pore_flag == 0 else np.array([-0.2, 0.2])
-  
+    generator.void_shape = np.array(
+        [-0., 0.]) if pore_flag == 0 else np.array([-0.2, 0.2])
+
     energy_density, force = generator._anealing_solver_disp(return_force=True)
 
     force = np.asarray([f[1][1] for f in force])
-    energy = np.asarray(energy_density)*pow(args.n_cells*args.L0, 2)
-  
+    energy = np.asarray(energy_density) * pow(args.n_cells * args.L0, 2)
+
     end = time.time()
     time_elapsed = end - start
 
     deform_info = 'com' if disp < 0 else 'ten'
-    np.save('plots/new_data/numpy/energy/' + name + '_energy_' + deform_info + 
+    np.save('plots/new_data/numpy/energy/' + name + '_energy_' + deform_info +
             '_pore' + str(pore_flag) + '.npy', energy)
-    np.save('plots/new_data/numpy/force/' + name + '_force_' + deform_info + 
+    np.save('plots/new_data/numpy/force/' + name + '_force_' + deform_info +
             '_pore' + str(pore_flag) + '.npy', force)
-    np.save('plots/new_data/numpy/time/' + name + '_time_' + deform_info + 
+    np.save('plots/new_data/numpy/time/' + name + '_time_' + deform_info +
             '_pore' + str(pore_flag) + '.npy', time_elapsed)
 
     print('energy_list', energy)
@@ -47,9 +49,12 @@ def run_and_save(disp, pore_flag, name):
     print('\n')
 
 
-if __name__ == '__main__':
-    args = arguments.args
+def run()
     run_and_save(disp=-0.125, pore_flag=0, name='DNS')
     run_and_save(disp=-0.125, pore_flag=1, name='DNS')
     run_and_save(disp=0.125, pore_flag=0, name='DNS')
     run_and_save(disp=0.125, pore_flag=1, name='DNS')
+
+if __name__ == '__main__':
+    args = arguments.args
+    run()
