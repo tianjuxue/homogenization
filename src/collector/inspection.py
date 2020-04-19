@@ -75,9 +75,7 @@ def plot_normal():
 
 
 if __name__ == '__main__':
-
     args = arguments.args
-    PATH = args.data_path_integrated_regular
     generator = Generator(args)
 
     generator.args.relaxation_parameter = 0.05
@@ -88,17 +86,10 @@ if __name__ == '__main__':
     generator.args.fluctuation = True
     generator.anneal_factors = np.linspace(0, 1, 11)
 
-    plot_normal()
-    plot_shear()
-
     # compute_normal(generator)
     # compute_shear(generator)
 
-    # try:
-    #     generator._anealing_solver_fluctuation(False)
-    #     print(generator.energy_density)
-    #     print(generator.probe_all)
-    # except Exception as e:
-    #     print(e)
-    #     print(generator.energy_density)
-    #     print(generator.probe_all)
+    plot_normal()
+    plot_shear()
+
+

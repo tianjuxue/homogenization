@@ -100,6 +100,67 @@ def manual_nn(network, x):
     return x[0]
 
 
+def manual_gpr(network, C_list):
+    result0 = 0
+    for i, x in enumerate(X_train[0:900]):
+        tmp = (x[0]/l[0] - C_list[0]/l[0])**2 + \
+              (x[1]/l[1] - C_list[1]/l[1])**2 + \
+              (x[2]/l[2] - C_list[2]/l[2])**2 + \
+              (x[3]/l[3] - C_list[3]/l[3])**2 
+        result0 += sigma_f**2 * ufl.operators.exp(-0.5 * tmp) * v[i]    
+
+    result1 = 0
+    for i, x in enumerate(X_train[900:1800]):
+        tmp = (x[0]/l[0] - C_list[0]/l[0])**2 + \
+              (x[1]/l[1] - C_list[1]/l[1])**2 + \
+              (x[2]/l[2] - C_list[2]/l[2])**2 + \
+              (x[3]/l[3] - C_list[3]/l[3])**2 
+        result1 += sigma_f**2 * ufl.operators.exp(-0.5 * tmp) * v[i + 900]
+
+    result2 = 0
+    for i, x in enumerate(X_train[1800:2700]):
+        tmp = (x[0]/l[0] - C_list[0]/l[0])**2 + \
+              (x[1]/l[1] - C_list[1]/l[1])**2 + \
+              (x[2]/l[2] - C_list[2]/l[2])**2 + \
+              (x[3]/l[3] - C_list[3]/l[3])**2 
+        result2 += sigma_f**2 * ufl.operators.exp(-0.5 * tmp) * v[i + 1800]
+
+    result3 = 0
+    for i, x in enumerate(X_train[2700:3600]):
+        tmp = (x[0]/l[0] - C_list[0]/l[0])**2 + \
+              (x[1]/l[1] - C_list[1]/l[1])**2 + \
+              (x[2]/l[2] - C_list[2]/l[2])**2 + \
+              (x[3]/l[3] - C_list[3]/l[3])**2 
+        result3 += sigma_f**2 * ufl.operators.exp(-0.5 * tmp) * v[i + 2700]
+
+    result4 = 0
+    for i, x in enumerate(X_train[3600:4500]):
+        tmp = (x[0]/l[0] - C_list[0]/l[0])**2 + \
+              (x[1]/l[1] - C_list[1]/l[1])**2 + \
+              (x[2]/l[2] - C_list[2]/l[2])**2 + \
+              (x[3]/l[3] - C_list[3]/l[3])**2 
+        result4 += sigma_f**2 * ufl.operators.exp(-0.5 * tmp) * v[i + 3600]
+
+    result5 = 0
+    for i, x in enumerate(X_train[4500:5400]):
+        tmp = (x[0]/l[0] - C_list[0]/l[0])**2 + \
+              (x[1]/l[1] - C_list[1]/l[1])**2 + \
+              (x[2]/l[2] - C_list[2]/l[2])**2 + \
+              (x[3]/l[3] - C_list[3]/l[3])**2 
+        result5 += sigma_f**2 * ufl.operators.exp(-0.5 * tmp) * v[i + 4500]
+
+    result6 = 0
+    for i, x in enumerate(X_train[5400:]):
+        tmp = (x[0]/l[0] - C_list[0]/l[0])**2 + \
+              (x[1]/l[1] - C_list[1]/l[1])**2 + \
+              (x[2]/l[2] - C_list[2]/l[2])**2 + \
+              (x[3]/l[3] - C_list[3]/l[3])**2 
+        result6 += sigma_f**2 * ufl.operators.exp(-0.5 * tmp) * v[i + 5400]
+
+    return result0 + result1 + result2 + result3 + result4 + result5 + result6
+
+
+
 def get_energy(u, pore_flag, network, V):
     # Kinematics
     d = u.geometric_dimension()
@@ -119,7 +180,9 @@ def get_energy(u, pore_flag, network, V):
         xi = interpolate(xi_exp, V)
         C_list = [C00, C01, C11, xi[0], xi[1]]
 
-    energy = manual_nn(network, C_list)
+    # change to manual_nn for NN
+    # change to manual_gpr for GPR
+    energy = manual_gpr(network, C_list)
     stress = diff(energy, F)
     return energy, stress
 
@@ -131,8 +194,8 @@ def homogenization(args, disp, pore_flag):
 
     print("Start to solve with disp={:.6f} and pore_flag={}".format(
         disp, pore_flag))
-    model_path = args.checkpoints_path + '/model_step_999'
-    # model_path = 'saved_checkpoints_tmp/new_universal'
+    # model_path = args.checkpoints_path + '/model_step_999'
+    model_path = 'saved_checkpoints_tmp/new_universal'
     network = torch.load(model_path)
 
     parameters["form_compiler"]["cpp_optimize"] = True
@@ -278,5 +341,12 @@ if __name__ == '__main__':
     args.n_macro = 8
     args.relaxation_parameter = 0.1
     args.max_newton_iter = 2000
+
+
+    params = np.load('plots/new_data/numpy/gpr/para.npz')
+    l = params['l']
+    sigma_f = params['sigma_f']
+    X_train = params['X_train']
+    v = params['v']
 
     energy, force, u = homogenization(args, disp=-0.1, pore_flag=1)
