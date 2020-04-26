@@ -1,5 +1,3 @@
-"""Collects data for gripper case"""
-
 import numpy as np
 import os
 from .generator import Generator, GeneratorDummy

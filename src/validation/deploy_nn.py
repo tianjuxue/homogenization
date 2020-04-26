@@ -1,4 +1,3 @@
-"""Archived quick dirty tests"""
 from dolfin import *
 import ufl
 from ufl.operators import *
@@ -182,7 +181,7 @@ def get_energy(u, pore_flag, network, V):
 
     # change to manual_nn for NN
     # change to manual_gpr for GPR
-    energy = manual_gpr(network, C_list)
+    energy = manual_nn(network, C_list)
     stress = diff(energy, F)
     return energy, stress
 
@@ -317,9 +316,9 @@ def run_and_save(factors, disp, pore_flag, name):
 
     deform_info = 'com' if disp < 0 else 'ten'
     np.save('plots/new_data/numpy/energy/' + name + '_energy_' + deform_info +
-            '_pore' + str(pore_flag) + '.npy', np.asarray(energy_list))
+            '_pore' + str(pore_flag) + '.npy', np.asarray(energy_list) / pow(args.n_macro * args.L0, 2))
     np.save('plots/new_data/numpy/force/' + name + '_force_' + deform_info +
-            '_pore' + str(pore_flag) + '.npy', np.asarray(force_list))
+            '_pore' + str(pore_flag) + '.npy', np.asarray(force_list) / (args.n_macro * args.L0) )
     np.save('plots/new_data/numpy/time/' + name + '_time_' + deform_info +
             '_pore' + str(pore_flag) + '.npy', np.asarray(time_elapsed))
 
@@ -331,10 +330,10 @@ def run_and_save(factors, disp, pore_flag, name):
 
 def run():
     factors = np.linspace(0, 1, 9)
-    run_and_save(factors, disp=-0.125, pore_flag=0, name='NN')
-    run_and_save(factors, disp=-0.125, pore_flag=1, name='NN')
-    run_and_save(factors, disp=0.125, pore_flag=0, name='NN')
-    run_and_save(factors, disp=0.125, pore_flag=1, name='NN')
+    run_and_save(factors, disp=-0.1, pore_flag=0, name='NN')
+    run_and_save(factors, disp=-0.1, pore_flag=1, name='NN')
+    run_and_save(factors, disp=0.1, pore_flag=0, name='NN')
+    run_and_save(factors, disp=0.1, pore_flag=1, name='NN')
 
 if __name__ == '__main__':
     args = arguments.args
@@ -342,11 +341,13 @@ if __name__ == '__main__':
     args.relaxation_parameter = 0.1
     args.max_newton_iter = 2000
 
+    run()
+    exit()
 
+    # GPR related
     params = np.load('plots/new_data/numpy/gpr/para.npz')
     l = params['l']
     sigma_f = params['sigma_f']
     X_train = params['X_train']
     v = params['v']
-
     energy, force, u = homogenization(args, disp=-0.1, pore_flag=1)

@@ -34,6 +34,8 @@ def add_args(parser):
         help='young\'s modulus of base material',
         type=float,
         default=100)
+
+    # When changing 0.3 to 0.49, convergence is harder
     parser.add_argument(
         '--poisson_ratio',
         help='poisson\'s ratio of base material',

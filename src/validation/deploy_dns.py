@@ -1,8 +1,6 @@
-"""Collects data for gripper case"""
-
 import numpy as np
 import os
-from ..collector.generator import Generator, GeneratorDummy
+from ..collector.generator import Generator
 from .. import arguments
 import fenics as fa
 import matplotlib.pyplot as plt
@@ -29,8 +27,11 @@ def run_and_save(disp, pore_flag, name):
 
     energy_density, force = generator._anealing_solver_disp(return_force=True)
 
-    force = np.asarray([f[1][1] for f in force])
-    energy = np.asarray(energy_density) * pow(args.n_cells * args.L0, 2)
+    # force = np.asarray([f[1][1] for f in force])
+    # energy = np.asarray(energy_density) * pow(args.n_cells * args.L0, 2)
+
+    force = np.asarray([f[1][1] for f in force]) / (args.n_cells * args.L0)
+    energy = np.asarray(energy_density) 
 
     end = time.time()
     time_elapsed = end - start
@@ -49,11 +50,11 @@ def run_and_save(disp, pore_flag, name):
     print('\n')
 
 
-def run()
-    run_and_save(disp=-0.125, pore_flag=0, name='DNS')
-    run_and_save(disp=-0.125, pore_flag=1, name='DNS')
-    run_and_save(disp=0.125, pore_flag=0, name='DNS')
-    run_and_save(disp=0.125, pore_flag=1, name='DNS')
+def run():
+    run_and_save(disp=-0.1, pore_flag=0, name='DNS')
+    run_and_save(disp=-0.1, pore_flag=1, name='DNS')
+    run_and_save(disp=0.1, pore_flag=0, name='DNS')
+    run_and_save(disp=0.1, pore_flag=1, name='DNS')
 
 if __name__ == '__main__':
     args = arguments.args
