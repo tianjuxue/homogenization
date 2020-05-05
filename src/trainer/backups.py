@@ -125,3 +125,9 @@ def run_trainer(args, Xin, Xout, lr, bsize, hidden_dim):
     print("MSE for testing", compute_MSE(model, Xt_in, Xt_out))
 
     return compute_MSE(model, Xt_in, Xt_out)
+
+
+if prune:
+    index = np.where(np.sum(np.absolute(Xin[:, :4]), axis=1) > 1e-10)
+    Xin = Xin[index]
+    Xout = Xout[index]

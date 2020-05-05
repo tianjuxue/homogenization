@@ -14,6 +14,7 @@ from torch.autograd import Variable
 import logging
 import scipy.optimize as opt
 import os
+from .sceener import load_data_all, load_data_single
 from .. import arguments
 from sklearn.linear_model import Ridge, Lasso
 
@@ -42,27 +43,6 @@ class Linear(nn.Module):
     def forward(self, x):
         x = self.fc(x)
         return x
-
-
-def get_features_C(Xin):
-    Xin[:, 0] = Xin[:, 0] + 1
-    Xin[:, 3] = Xin[:, 3] + 1
-    X_new = Xin.copy()
-    X_new[:, 0] = Xin[:, 0] * Xin[:, 0] + Xin[:, 2] * Xin[:, 2]
-    X_new[:, 1] = Xin[:, 0] * Xin[:, 1] + Xin[:, 2] * Xin[:, 3]
-    X_new[:, 2] = Xin[:, 1] * Xin[:, 1] + Xin[:, 3] * Xin[:, 3]
-    X_new = X_new[:, [0, 1, 2, 4, 5]]
-    return X_new
-
-
-def compute_MSE(model, Xin, Xout):
-    inBatch = torch.tensor(Xin).float()
-    outBatch = torch.tensor(Xout).view(-1, 1).float()
-    fhat = model(inBatch)
-    f = outBatch
-    SS_res = torch.sum((f - fhat)**2)
-    MSE = SS_res / Xout.shape[0]
-    return MSE.data.numpy()
 
 
 class Trainer(object):
@@ -162,41 +142,14 @@ class Trainer(object):
         return compute_MSE(model, Xin_v, Xout_v)
 
 
-def load_data_all(args, prune=False):
-    DATA_PATH_shear = 'saved_data_shear'
-    DATA_PATH_normal = 'saved_data_normal'
-    Xin_shear, Xout_shear = load_data_single(DATA_PATH_shear)
-    Xin_normal, Xout_normal = load_data_single(DATA_PATH_normal)
-    Xin = np.concatenate((Xin_shear, Xin_normal))
-    Xout = np.concatenate((Xout_shear, Xout_normal))
-
-    if prune:
-        index = np.where(np.sum(np.absolute(Xin[:, :4]), axis=1) > 1e-10)
-        Xin = Xin[index]
-        Xout = Xout[index]
-
-    Xin = get_features_C(Xin)
-    args.input_dim = Xin.shape[1]
-    return Xin, Xout
-
-
-def load_data_single(file_path):
-    files = glob.glob(os.path.join(file_path, '*.npy'))
-    X_vec = []
-    y_vec = []
-
-    for i, f in enumerate(files):
-        if i % 1000 == 0:
-            print("processed ", i, " files")
-        data = np.load(f).item()['data'][1]
-        X = np.concatenate((data[0], data[1]))
-        y = data[2]
-        X_vec.append(X)
-        y_vec.append(y)
-
-    X_input = np.asarray(X_vec)
-    y_input = np.asarray(y_vec)
-    return X_input, y_input
+def compute_MSE(model, Xin, Xout):
+    inBatch = torch.tensor(Xin).float()
+    outBatch = torch.tensor(Xout).view(-1, 1).float()
+    fhat = model(inBatch)
+    f = outBatch
+    SS_res = torch.sum((f - fhat)**2)
+    MSE = SS_res / Xout.shape[0]
+    return MSE.data.numpy()
 
 
 def scheduled_run():
