@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from numpy.linalg import inv
 from numpy.linalg import cholesky, det, lstsq
 from scipy.optimize import minimize
-from ..trainer.loader import load_data_all
+from ..trainer.screener import load_data_all
 from .. import arguments
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import ConstantKernel, RBF
@@ -222,8 +222,9 @@ def ufl_pre_test(C_list, l, sigma_f, X_train, v):
     return result
 
 def test_custom(X_test, Y_test, X_train, Y_train, sigma_y):
-    l = np.array([0.422, 0.581, 0.391, 0.573])
-    sigma_f = 2.478
+
+    l = np.array([0.421, 0.688, 0.463, 0.52 ])
+    sigma_f = 2.492785052785189
     K = kernel_anisotropic(X_train, X_train, l, sigma_f) + \
         sigma_y**2 * np.eye(len(X_train))
     K_inv = inv(K)
@@ -242,20 +243,19 @@ def test_custom(X_test, Y_test, X_train, Y_train, sigma_y):
 
 
 def gp_exp_homo(args):
-    Xin, Xout = load_data_all(args, prune=True)
-    X_total = Xin[:, :-1]
+
+    Xin, Xout = load_data_all(args, rm_dup=True, middle=False)
+    X_total = Xin[:, :]
     Y_total = Xout[:]
     X_train, Y_train, X_test, Y_test = train_test_split(X_total, Y_total)
     noise = 0.01
 
     test_custom(X_test, Y_test, X_train, Y_train, noise)
-    exit()
-
+ 
     # scikit learn
-    rbf = ConstantKernel(1.0) * RBF(length_scale=[1., 1., 1., 1.])
+    rbf = ConstantKernel(1.0) * RBF(length_scale=[0.1, 0.1, 0.1, 0.1])
     gpr = GaussianProcessRegressor(kernel=rbf, alpha=noise**2)
 
-    # Reuse training data from previous 1D example
     gpr.fit(X_train, Y_train)
 
     # Obtain optimized kernel parameters

@@ -12,14 +12,21 @@ def get_features_C(Xin):
     X_new[:, 0] = Xin[:, 0] * Xin[:, 0] + Xin[:, 2] * Xin[:, 2]
     X_new[:, 1] = Xin[:, 0] * Xin[:, 1] + Xin[:, 2] * Xin[:, 3]
     X_new[:, 2] = Xin[:, 1] * Xin[:, 1] + Xin[:, 3] * Xin[:, 3]
-    X_new = X_new[:, [0, 1, 2, 4, 5]]
+    # X_new = X_new[:, [0, 1, 2, 4, 5]]
+    X_new = X_new[:, [0, 1, 2, 4]]
     return X_new
 
 
 def load_data_all(args, rm_dup=True, middle=True):
-    DATA_PATH_shear = 'saved_data_shear'
+    
     DATA_PATH_normal = 'saved_data_normal'
     DATA_PATH_middle = 'saved_data_middle'
+    DATA_PATH_shear = 'saved_data_shear'
+    
+    # DATA_PATH_normal = 'saved_data_pore0'
+    # DATA_PATH_middle = 'saved_data_pore1'
+    # DATA_PATH_shear = 'saved_data_pore2'
+
     Xin_shear, Xout_shear = load_data_single(DATA_PATH_shear, rm_dup)
     Xin_normal, Xout_normal = load_data_single(DATA_PATH_normal, rm_dup)
     Xin_middle, Xout_middle = load_data_single(DATA_PATH_middle, rm_dup)
@@ -29,7 +36,10 @@ def load_data_all(args, rm_dup=True, middle=True):
     else:
         Xin = np.concatenate((Xin_shear, Xin_normal))
         Xout = np.concatenate((Xout_shear, Xout_normal))
+
     args.input_dim = Xin.shape[1]
+
+    print("\nTotal number of samples:", len(Xin))
     return Xin, Xout
 
 
@@ -37,7 +47,7 @@ def load_data_single(file_path, rm_dup):
     files = glob.glob(os.path.join(file_path, '*.npy'))
     X_vec = []
     y_vec = []
-
+    print("\nprocessing", file_path)
     for i, f in enumerate(files):
         if i % 1000 == 0:
             print("processed ", i, " files")
@@ -54,11 +64,7 @@ def load_data_single(file_path, rm_dup):
 
     if rm_dup:
         XY = np.asarray(sorted(XY, key=functools.cmp_to_key(compare)))
-        # print(XY[:20])
-        # print('\n')
         XY = remove_dup(XY)
-        # print(XY[:20])
-        
 
     return XY[:, :-1], XY[:, -1]
 
@@ -108,8 +114,3 @@ if __name__ == '__main__':
     args = arguments.args
     Xin, Xout = load_data_all(args, rm_dup=True, middle=True)
     print(np.concatenate((Xin, Xout.reshape(-1, 1)), axis=1))
- 
- 
- 
-
- 

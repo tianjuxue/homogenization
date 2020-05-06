@@ -14,7 +14,7 @@ from torch.autograd import Variable
 import logging
 import scipy.optimize as opt
 import os
-from .sceener import load_data_all, load_data_single
+from .screener import load_data_all, load_data_single
 from .. import arguments
 from sklearn.linear_model import Ridge, Lasso
 
@@ -55,8 +55,10 @@ class Trainer(object):
         self._shuffle_data()
 
     def _shuffle_data(self):
-        self.K = 5
-        test_ratio = 0.1
+        # self.K = 5
+        # test_ratio = 0.1
+        self.K = 10
+        test_ratio = 0.0
         division = np.linspace(0, 1 - test_ratio, self.K + 1)
         n_samples = len(self.Xin)
         division = division * n_samples
@@ -112,7 +114,8 @@ class Trainer(object):
         optimizer = torch.optim.Adam(
             model.parameters(), lr=args.lr, weight_decay=args.wd)
 
-        epoch_number = 1000
+        # epoch_number = 1000
+        epoch_number = 2000
         log_interval = 100
         nTrain = len(Xin_t)
         step_number = nTrain // args.batch_ize
@@ -160,16 +163,17 @@ def scheduled_run():
     for lr in lr_list:
         for bsize in bsize_list:
             for hidden_dim in hidden_dim_list:
-                error = run_trainer(args, Xin, Xout, lr, bsize, hidden_dim)
-                error_list.append(error)
+            	    Xin, Xout = load_data_all(args, rm_dup=True, middle=True)
+    				trainer = Trainer(args, Xin, Xout)
+    				error = trainer.train(k=1, lr=lr, bsize=bsize, hidden_dim=hidden_dim)
+	                # error = run_trainer(args, Xin, Xout, lr, bsize, hidden_dim)
+	                error_list.append(error)
     print(error_list)
 
 if __name__ == '__main__':
     args = arguments.args
     MODEL_PATH = args.checkpoints_path
-    # prune flag removes the repeated elements in Xin
-    Xin, Xout = load_data_all(args, prune=False)
+    # trainer.LR()
+    Xin, Xout = load_data_all(args, rm_dup=True, middle=True)
     trainer = Trainer(args, Xin, Xout)
-    trainer.LR()
-    exit()
-    error = trainer.train(1, 1e-2, 32, 256)
+    error = trainer.train(k=1, lr=1e-2, bsize=32, hidden_dim=256)

@@ -1,5 +1,6 @@
 """Base class for PDEs"""
 import fenics as fa
+import time
 
 class PDE(object):
     """Base class for PDEs.
@@ -10,7 +11,10 @@ class PDE(object):
         # self.args.fluctuation = False
         # self.args.F_list = None
         if mesh is None:
+            start = time.time()
             self._build_mesh()
+            end = time.time()
+            self.time_elapsed = end - start 
         else:
             self.mesh = mesh
         # TODO(Tianju): Change these member variables

@@ -18,12 +18,19 @@ def run_and_save(disp, pore_flag, name):
     generator.args.metamaterial_mesh_size = 15
     generator.args.fluctuation = False
     generator.args.F_list_fixed = [[-0., -0.], [0., disp]]
-    generator.args.gradient = False if pore_flag < 2 else True
-    generator.anneal_factors = np.linspace(0, 1, 9)
+    generator.args.gradient = False if pore_flag < 3 else True
+    # Initial submission
+    # generator.anneal_factors = np.linspace(0, 1, 9)
+    generator.anneal_factors = np.linspace(0, 1, 11)
 
     generator.def_grad = np.array([0, 0, 0, disp])
-    generator.void_shape = np.array(
-        [-0., 0.]) if pore_flag == 0 else np.array([-0.2, 0.2])
+
+    if pore_flag == 0:
+        generator.void_shape = np.array([-0., 0.]) 
+    elif pore_flag == 1:
+        generator.void_shape = np.array([-0.1, 0.1]) 
+    else:
+        generator.void_shape = np.array([-0.2, 0.2]) 
 
     energy_density, force = generator._anealing_solver_disp(return_force=True)
 
@@ -52,9 +59,9 @@ def run_and_save(disp, pore_flag, name):
 
 def run():
     run_and_save(disp=-0.1, pore_flag=0, name='DNS')
-    run_and_save(disp=-0.1, pore_flag=1, name='DNS')
+    run_and_save(disp=-0.1, pore_flag=2, name='DNS')
     run_and_save(disp=0.1, pore_flag=0, name='DNS')
-    run_and_save(disp=0.1, pore_flag=1, name='DNS')
+    run_and_save(disp=0.1, pore_flag=2, name='DNS')
 
 if __name__ == '__main__':
     args = arguments.args
