@@ -7,7 +7,7 @@ import sobol_seq
 import sys
 
 
-def save_fn(fname, path, def_grad, void_shape, predicted_energy):
+def save_fn(args, fname, path, def_grad, void_shape, predicted_energy):
     to_save = {
         'args': args,
         'data': [['def_grad', 'void_shape', 'predicted_energy']]
@@ -55,7 +55,7 @@ def simulate(generator, def_grad, void_shape, solve=True):
     return def_grad_all, void_shape_all, predicted_energy_all
 
 
-def run_trial_sobol(path, index, parameters):
+def run_trial_ray(path, index, parameters):
     generator.args.F_list_fixed = [
         [parameters[0], parameters[1]], [parameters[2], parameters[3]]]
     def_grad = np.array(parameters[0:4])
@@ -80,7 +80,8 @@ def run_trial_sobol(path, index, parameters):
                 generator, def_grad, void_shape, False)
 
     for i in range(len(predicted_energy_all)):
-        save_fn('number_' + str(index) + '_anneal' + str(i),
+        save_fn(generator.args,
+               'number_' + str(index) + '_anneal' + str(i),
                 path,
                 def_grad_all[i],
                 void_shape_all[i],
@@ -138,7 +139,7 @@ def collect_ray(path, get_parameters):
         parameters = get_parameters(vec[i])
         print("Simulation for round", i)
         print("parameters is", parameters)
-        run_trial_sobol(path=path, index=i, parameters=parameters)
+        run_trial_ray(path=path, index=i, parameters=parameters)
 
 
 if __name__ == '__main__':

@@ -1,6 +1,8 @@
 """Base class for PDEs"""
 import fenics as fa
 import time
+from .dr_solve import DynamicRelaxSolve
+
 
 class PDE(object):
     """Base class for PDEs.
@@ -47,7 +49,8 @@ class PDE(object):
                       boundary_point_fn=None,
                       boundary_fn_dic=None,
                       initial_guess=None,
-                      enable_fast_solve=False):
+                      enable_fast_solve=False,
+                      enable_dynamic_solve=False):
 
         u = fa.Function(self.V)
         du = fa.TrialFunction(self.V)
@@ -83,6 +86,12 @@ class PDE(object):
             for key in boundary_fn_dic:
                 boundary_bc = fa.DirichletBC(self.V, boundary_fn_dic[key], self.exteriors_dic[key])
                 bcs = bcs + [boundary_bc]
+
+        bcs_homo = []
+        if boundary_fn_dic is not None:
+            for key in boundary_fn_dic:
+                boundary_bc = fa.DirichletBC(self.V, fa.Constant((0, 0)), self.exteriors_dic[key])
+                bcs_homo = bcs_homo + [boundary_bc]
 
         dE = fa.derivative(E, u, v)
         jacE = fa.derivative(dE, u, du)
@@ -131,8 +140,13 @@ class PDE(object):
                        "precompute_ip_const": True}
 
         if enable_fast_solve:
-            fa.solve(dE == 0, u, bcs, J=jacE,
-                    form_compiler_parameters=ffc_options)
+            if enable_dynamic_solve:
+                nIters, convergence = DynamicRelaxSolve(dE, u, bcs, jacE)
+                if not convergence:
+                    assert(False)
+            else:
+                fa.solve(dE == 0, u, bcs, J=jacE,
+                        form_compiler_parameters=ffc_options)                
         else:
             fa.solve(dE == 0, u, bcs, J=jacE,
                      form_compiler_parameters=ffc_options, 

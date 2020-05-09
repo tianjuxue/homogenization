@@ -10,8 +10,6 @@ if __name__ == '__main__':
     x = [1,2,3]
     locs = ['upper right', 'lower right', 'lower right']
 
-
-
     for i in range(3):
         fig = plt.figure()
         plt.tick_params(labelsize=12)

@@ -20,9 +20,9 @@ if __name__ == '__main__':
 
     # plot from vtk
     reader = vtk.vtkXMLUnstructuredGridReader()
-    reader.SetFileName("plots/data/tension/homo_gradient.vtu")
+    # reader.SetFileName("plots/data/tension/homo_gradient.vtu")
+    reader.SetFileName("u000000.vtu")
     reader.Update()
-
 
     data = reader.GetOutput()
 
@@ -31,15 +31,15 @@ if __name__ == '__main__':
     x = vtk_to_numpy(points.GetData())
     u = vtk_to_numpy(data.GetPointData().GetVectors('u'))
 
-    x = x + u
+    # x = x + u
 
     triangles =  vtk_to_numpy(data.GetCells().GetData())
     ntri = triangles.size//4  # number of cells
     tri = np.take(triangles, [n for n in range(triangles.size) if n%4 != 0]).reshape(ntri,3)
 
     fig = plt.figure(figsize=(8, 8))
-    # plt.triplot(x[:,0], x[:,1], tri, linewidth=0.2, color='r')    
-    plt.triplot(x[:,0], x[:,1], tri, marker='o', markersize=1, linewidth=0.5, color='r')
+    plt.triplot(x[:,0], x[:,1], tri, linewidth=0.5, color='r')    
+    # plt.triplot(x[:,0], x[:,1], tri, marker='o', markersize=1, linewidth=0.5, color='r')
     plt.gca().set_aspect('equal')
     plt.axis('off')
 
@@ -59,6 +59,6 @@ if __name__ == '__main__':
 
     # plt.axis('off')
     # plt.axis('equal')
-    fig.savefig("poisson.pdf", bbox_inches='tight')
+    # fig.savefig("poisson.pdf", bbox_inches='tight')
 
     plt.show()

@@ -98,6 +98,7 @@ class Generator(object):
         self.anneal_steps = 11
         self.anneal_factors = np.linspace(0, 1, self.anneal_steps)
         self.enable_fast_solve = True
+        self.enable_dynamic_solve = False
         self.args.n_cells = 1
         self.args.fluctuation = False
         self.args.F_list = None
@@ -233,7 +234,8 @@ class Generator(object):
                                   boundary_point_fn=None,
                                   boundary_fn_dic=boundary_fn_dic,
                                   initial_guess=guess,
-                                  enable_fast_solve=self.enable_fast_solve)
+                                  enable_fast_solve=self.enable_fast_solve,
+                                  enable_dynamic_solve=self.enable_dynamic_solve)
 
             guess = u.vector()
             energy = pde.energy(u)

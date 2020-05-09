@@ -24,22 +24,22 @@ def simulate(generator, res):
     energy = generator.energy_density
     mesh_max = generator.pde.mesh.hmax()
     mesh_min = generator.pde.mesh.hmin()
-    n_ele =  generator.pde.mesh.num_cells()
+    n_ele = generator.pde.mesh.num_cells()
     # magic number 0.5 is the area
-    h = np.sqrt(0.5/n_ele)
+    h = np.sqrt(0.5 / n_ele)
     return h, generator.pde, energy[-1], end - start
 
 
 def ref(generator):
     ratio = 1.5
-    resolution = [15/ratio, 15, 15*ratio, 15*ratio**2, 60]
+    resolution = [15 / ratio, 15, 15 * ratio, 15 * ratio**2, 60]
     pdes = []
     energy = []
     mesh_size = []
     error = []
     compute_time = []
     for res in resolution:
-        h, pde, e, t = simulate(generator, res) 
+        h, pde, e, t = simulate(generator, res)
         pdes.append(pde)
         energy.append(e)
         mesh_size.append(h)
@@ -55,20 +55,28 @@ def ref(generator):
     print(mesh_size)
     print(compute_time)
 
-    np.save('plots/new_data/numpy/refinement/mesh_size.npy', np.asarray(mesh_size))
+    np.save('plots/new_data/numpy/refinement/mesh_size.npy',
+            np.asarray(mesh_size))
     np.save('plots/new_data/numpy/refinement/error.npy', np.asarray(error))
-    np.save('plots/new_data/numpy/refinement/compute_time.npy', np.asarray(compute_time))
+    np.save('plots/new_data/numpy/refinement/compute_time.npy',
+            np.asarray(compute_time))
+
 
 def plot_results():
     mesh_size = np.load('plots/new_data/numpy/refinement/mesh_size.npy')
     error = np.load('plots/new_data/numpy/refinement/error.npy')
     compute_time = np.load('plots/new_data/numpy/refinement/compute_time.npy')
 
+    np.set_printoptions(precision=6)
+    print("mesh_size", mesh_size)
+    print("error", error)
+    print("compute_time", compute_time)
+
     ms = np.linspace(mesh_size[0], mesh_size[-1], 100)
     first_order = ms
-    first_order = first_order/first_order[0]*error[0]
-    second_order = ms**2 
-    second_order = second_order/second_order[0]*error[0]
+    first_order = first_order / first_order[0] * error[0]
+    second_order = ms**2
+    second_order = second_order / second_order[0] * error[0]
 
     # plt.figure(0)
     # plt.loglog(mesh_size, error, linestyle='--', marker='o', color='red')
@@ -96,7 +104,6 @@ def plot_results():
     plt.show()
 
 
-
 def get_error(pde1, pde2):
     V1 = pde1.V
     V2 = pde2.V
@@ -105,6 +112,7 @@ def get_error(pde1, pde2):
     error = fa.Function(V1)
     error.vector().set_local(u1.vector()[:] - u2.vector()[:])
     return fa.norm(error)
+
 
 def run(args):
     generator = Generator(args)
@@ -118,9 +126,12 @@ def run(args):
     if run_simulation:
         ref(generator)
     plot_results()
+    # simulate(generator, 15)
+
+
+
 
 if __name__ == '__main__':
     args = arguments.args
     run(args)
 
-    
