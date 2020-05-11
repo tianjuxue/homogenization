@@ -271,7 +271,8 @@ class Generator(object):
             if return_all:
                 self.force.append(pde.force(u))
                 self.sols.append(u)
-
+                
+            u.rename('u', 'u')
             file << (u, i)
 
         print("Total energy is", energy)

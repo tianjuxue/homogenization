@@ -19,7 +19,7 @@ def run_and_save(size):
     generator.args.metamaterial_mesh_size = 15
     generator.args.fluctuation = False
     generator.args.padding = True
-    generator.anneal_factors = np.linspace(0, 1, 21)
+    generator.anneal_factors = np.linspace(0, 1, 31)
     generator.def_grad = np.array([0, 0, 0, -0.1])
     generator.void_shape = np.array([-0., 0.])
     energy_density, force, sols = generator._anealing_solver_disp(return_all=True)
@@ -74,12 +74,12 @@ def plot_results_force():
     plt.plot(np.linspace(0, -0.1, len(NN_force_com_pore0)), (NN_force_com_pore0 - NN_force_com_pore0[0]), '--', color='blue')
 
     sizes = np.load('plots/new_data/numpy/size_effect/sizes.npy')
-    sizes = [6, 8, 10]
+    sizes = [8]
     colors = ['orange', 'blue', 'red', 'purple']
     for i, sz in enumerate(sizes):
         DNS_force_com_pore0 = np.load('plots/new_data/numpy/size_effect/' + 'DNS_force_com_pore0_size' + str(sz)  + '.npy')
         # plt.plot(np.linspace(0, -0.1, len(DNS_force_com_pore0)), (DNS_force_com_pore0 - DNS_force_com_pore0[0]), linestyle='--', marker='o', color=colors[i])
-        plt.plot(np.linspace(0, -0.1, len(DNS_force_com_pore0)), (DNS_force_com_pore0 - DNS_force_com_pore0[0]), linestyle='-', color=colors[i])
+        plt.plot(np.linspace(0, -0.1, len(DNS_force_com_pore0)), (DNS_force_com_pore0 - DNS_force_com_pore0[0]), linestyle='-', marker='o', color=colors[i])
 
 def plot_custom_force():
     DNS_force_com_pore0 = np.load('plots/new_data/numpy/size_effect/DNS_force_com_pore0_size4.npy') 
@@ -92,11 +92,12 @@ def plot_custom_force():
 def run():
     simulate()
     # plot_results_time()
-    # plot_results_force()
+    plot_results_force()
     plt.show()
 
 
 if __name__ == '__main__':
     args = arguments.args
     # fa.set_log_level(20)
+    args.poisson_ratio = 0.499
     run()
