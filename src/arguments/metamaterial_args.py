@@ -41,3 +41,14 @@ def add_args(parser):
         help='poisson\'s ratio of base material',
         type=float,
         default=0.3)
+
+    parser.add_argument(
+        '--padding',
+        action='store_true',
+        default=False
+    )
+    parser.add_argument(
+        '--gradient',
+        action='store_true',
+        default=False
+    )

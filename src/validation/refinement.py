@@ -27,6 +27,9 @@ def simulate(generator, res):
     n_ele = generator.pde.mesh.num_cells()
     # magic number 0.5 is the area
     h = np.sqrt(0.5 / n_ele)
+
+    print(h)
+
     return h, generator.pde, energy[-1], end - start
 
 
@@ -67,7 +70,6 @@ def plot_results():
     error = np.load('plots/new_data/numpy/refinement/error.npy')
     compute_time = np.load('plots/new_data/numpy/refinement/compute_time.npy')
 
-    np.set_printoptions(precision=6)
     print("mesh_size", mesh_size)
     print("error", error)
     print("compute_time", compute_time)
@@ -125,13 +127,14 @@ def run(args):
     run_simulation = False
     if run_simulation:
         ref(generator)
-    plot_results()
-    # simulate(generator, 15)
+    # plot_results()
+    simulate(generator, 60)
 
 
 
 
 if __name__ == '__main__':
     args = arguments.args
+    np.set_printoptions(precision=6)
     run(args)
 

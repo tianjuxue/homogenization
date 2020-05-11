@@ -1,3 +1,4 @@
+#deploy_nn.py
 def manual_gpr(network, C_list):
     result0 = 0
     for i, x in enumerate(X_train[0:900]):
@@ -70,3 +71,15 @@ if __name__ == '__main__':
     X_train = params['X_train']
     v = params['v']
     energy, force, u = homogenization(args, disp=-0.1, pore_flag=1)
+
+#size_effect.py
+for i, af in enumerate(generator.anneal_factors):
+    file = fa.File('plots/new_data/sol/instability_tracking/size' + str(size) + '_step' + str(i) + '_.pvd')
+    sols[i].rename('u', 'u')
+    file << sols[i]
+
+DNS_force_com_pore0 = np.load('plots/new_data/numpy/size_effect/' + 'DNS_force_com_pore0_size' + str(8)  + '_good.npy')
+plt.plot(np.linspace(0, -0.1, len(DNS_force_com_pore0)), (DNS_force_com_pore0 - DNS_force_com_pore0[0]), linestyle='--', marker='o', color='blue')
+
+DNS_force_com_pore0 = np.load('plots/new_data/numpy/size_effect/' + 'DNS_force_com_pore0_size' + str(8)  + '_bad.npy')
+plt.plot(np.linspace(0, -0.1, len(DNS_force_com_pore0)), (DNS_force_com_pore0 - DNS_force_com_pore0[0]), linestyle='--', marker='o', color='red')

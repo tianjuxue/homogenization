@@ -2,6 +2,7 @@ import fenics as fa
 import math
 import numpy as np
 import matplotlib.pyplot as plt
+import os.path
 from ..pde.static import Metamaterial
 
 
@@ -119,25 +120,35 @@ class Generator(object):
         self.predicted_energy_all = self._anealing_solver_fluctuation()
         return self.def_grad_all, self.void_shape_all, self.predicted_energy_all
 
-    def _get_factor(self, pde):
-        x_vals = np.linspace(0, 1, 11)
-        for x_val in x_vals:
-            sin_pore_exp = SinPoreExpression(self.args, x_val * 0.4)
-            u = fa.interpolate(sin_pore_exp, pde.V)
-            energy = pde.energy(u)
-            file = fa.File("u.pvd")
-            file << u
-            print(energy)
+    # def _get_factor(self, pde):
+    #     x_vals = np.linspace(0, 1, 11)
+    #     for x_val in x_vals:
+    #         sin_pore_exp = SinPoreExpression(self.args, x_val * 0.4)
+    #         u = fa.interpolate(sin_pore_exp, pde.V)
+    #         energy = pde.energy(u)
+    #         file = fa.File("u.pvd")
+    #         file << u
+    #         print(energy)
 
     def _anealing_solver_fluctuation(self, return_force=False):
         self.args.c1, self.args.c2 = self.void_shape
 
-        if np.sum(np.absolute(self.void_shape)) < 1e-3:
+        pore_type = 0 if np.sum(np.absolute(self.void_shape)) < 1e-3  else 2 
+        mesh_name = 'plots/new_data/mesh/RVE_' + str(self.args.n_cells) + '_pore' + str(pore_type) + '.xml'
+        if os.path.isfile(mesh_name):
+            mesh = fa.Mesh(mesh_name)
+        else:
+            mesh = None
+
+        if pore_type is 0:
             guide = True
         else:
             guide = False
 
-        pde = Metamaterial(self.args)
+        pde = Metamaterial(self.args, mesh)
+        if not os.path.isfile(mesh_name):
+            fa.File(mesh_name) << pde.mesh
+
         guess = fa.Function(pde.V).vector()
 
         max_amp = self.args.L0 / 2
@@ -200,26 +211,43 @@ class Generator(object):
                                   e11=e11, e12=e12, e21=e21, e22=e22, degree=2)
         result = fa.project(affine_fn + u, pde.V_non_periodic)
 
-        file = fa.File("u.pvd")
+        file = fa.File("tmp/u.pvd")
         result.rename('u', 'u')
         file << result
         self.pde = pde
         self.pde.u = u
+        self.pde.result = result
         
         if return_force:
             return self.energy_density, self.force
 
         return self.energy_density
 
-    def _anealing_solver_disp(self, return_force=False):
+    def _anealing_solver_disp(self, return_all=False):
         self.args.c1, self.args.c2 = self.void_shape
 
-        pde = Metamaterial(self.args)
+        pore_type = 0 if np.sum(np.absolute(self.void_shape)) < 1e-3  else 2 
+        if self.args.padding:
+            mesh_name = 'plots/new_data/mesh/DNS_padding_size' + str(self.args.n_cells) + '_pore' + str(pore_type) + '.xml'
+        else:
+            mesh_name = 'plots/new_data/mesh/DNS_size' + str(self.args.n_cells) + '_pore' + str(pore_type) + '.xml'
+            
+        if os.path.isfile(mesh_name):
+            mesh = fa.Mesh(mesh_name)
+        else:
+            mesh = None
+
+        pde = Metamaterial(self.args, mesh)
+        if not os.path.isfile(mesh_name):
+            fa.File(mesh_name) << pde.mesh
+
         guess = fa.Function(pde.V).vector()
 
         self.energy_density = []
         self.force = []
+        self.sols = []
 
+        file = fa.File("tmp/u.pvd")
         for i, factor in enumerate(self.anneal_factors):
             print("   Now at step", i)
             e11, e12, e21, e22 = factor * self.def_grad
@@ -228,8 +256,6 @@ class Generator(object):
 
             boundary_fn_dic = {'bottom': fa.Constant(
                 (0, 0)), 'top': boundary_fn}
-            boundary_fn = fa.Constant((0, 0))
-
             u = pde.solve_problem(boundary_fn=None,
                                   boundary_point_fn=None,
                                   boundary_fn_dic=boundary_fn_dic,
@@ -242,18 +268,18 @@ class Generator(object):
             self.energy_density.append(
                 energy / pow(self.args.n_cells * self.args.L0, 2))
 
-            if return_force:
+            if return_all:
                 self.force.append(pde.force(u))
+                self.sols.append(u)
+
+            file << (u, i)
 
         print("Total energy is", energy)
-
-        file = fa.File("u.pvd")
-        u.rename('u', 'u')
-        file << u
         self.pde = pde
+        self.pde.u = u
 
-        if return_force:
-            return self.energy_density, self.force
+        if return_all:
+            return self.energy_density, self.force, self.sols
 
         return self.energy_density
 

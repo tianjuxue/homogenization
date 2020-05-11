@@ -11,42 +11,67 @@ from .. import arguments
 
 
 def simulate_periodic(args):
-    generator = Generator(args)
-    generator.args.relaxation_parameter = 0.1
-    generator.args.max_newton_iter = 1000
-    generator.args.n_cells = 2
-    generator.args.fluctuation = True
-    generator.anneal_factors = np.linspace(0, 1, 2)
-    generator.enable_fast_solve = True
-    run_simulation = False
-    generator.args.metamaterial_mesh_size = 15
+    args.fluctuation = True
+    anneal_factors = np.linspace(0, 1, 2)
     parameters = [0., 0., -0., -0.125, -0.2, 0.2]
-    generator.args.F_list_fixed = [
-        [parameters[0], parameters[1]], [parameters[2], parameters[3]]]
     def_grad = np.array(parameters[0:4])
     void_shape = np.array(parameters[4:6])
-    # _, _, energy_density =  generator.generate_data_single(def_grad, void_shape)
-    # print(energy_density)
-    energy_density = solver_fluctuation(args, void_shape,  generator.anneal_factors, def_grad)
+    energy_density = solver_fluctuation(args, void_shape,  anneal_factors, def_grad)
     print(energy_density)
 
 
 def simulate_full(args):
-    generator = Generator(args)
-    generator.args.relaxation_parameter = 0.1
-    generator.args.max_newton_iter = 2000
-    generator.enable_fast_solve = True
-    generator.enable_dynamic_solve = True
-    generator.args.n_cells = 2
-    generator.args.metamaterial_mesh_size = 15
-    generator.args.fluctuation = False
-    generator.args.F_list_fixed = [[-0., -0.], [0., -0.1]]
-    generator.args.gradient = False
-    generator.anneal_factors = np.linspace(0, 1, 3)
-    generator.def_grad = np.array([0, 0, 0, -0.1])
-    generator.void_shape = np.array([-0., 0.])
-    generator._anealing_solver_disp()
+    args.fluctuation = False
+    anneal_factors = np.linspace(0, 1, 31)
+    parameters = [0., 0., -0., -0.1, -0., 0.]
+    def_grad = np.array(parameters[0:4])
+    void_shape = np.array(parameters[4:6])
+    energy_density, force = solver_disp(args, void_shape, anneal_factors, def_grad, return_force=True)
+    force = np.asarray([f[1][1] for f in force]) / (args.n_cells * args.L0)
+    np.save('plots/new_data/numpy/size_effect/DNS_force_com_pore0_size' + str(args.n_cells) + '_dr.npy', force)
 
+
+def solver_disp(args, void_shape, anneal_factors, def_grad, return_force=False):
+    args.c1, args.c2 = void_shape
+    pde = Metamaterial(args)
+    guess = fa.Function(pde.V).vector()
+    energy_density = []
+    force = []
+    pde.args.F_list = None
+    for i, factor in enumerate(anneal_factors):
+        print("   Now at step", i)
+        e11, e12, e21, e22 = factor * def_grad
+        boundary_fn = fa.Expression(('e11*x[0] + e12*x[1]', 'e21*x[0] + e22*x[1]'),
+                                    e11=e11, e12=e12, e21=e21, e22=e22, degree=2)
+
+        boundary_fn_dic = {'bottom': fa.Constant(
+            (0, 0)), 'top': boundary_fn}
+
+        u = pde.solve_problem(boundary_fn=None,
+                              boundary_point_fn=None,
+                              boundary_fn_dic=boundary_fn_dic,
+                              initial_guess=guess,
+                              enable_fast_solve=True,
+                              enable_dynamic_solve=True)
+
+        guess = u.vector()
+        energy = pde.energy(u)
+        energy_density.append(
+            energy / pow(args.n_cells * args.L0, 2))
+
+        file = fa.File("/tmp/u.pvd")
+        u.rename('u', 'u')
+        file << (u, i)
+
+        if return_force:
+            force.append(pde.force(u))
+
+    print("Total energy is", energy)
+
+    if return_force:
+        return energy_density, force
+
+    return energy_density
 
 def solver_fluctuation(args, void_shape, anneal_factors, def_grad):
     args.c1, args.c2 = void_shape
@@ -64,7 +89,7 @@ def solver_fluctuation(args, void_shape, anneal_factors, def_grad):
                                 boundary_fn_dic=None,
                                 initial_guess=guess,
                                 enable_fast_solve=True,
-                                enable_dynamic_solve=True)
+                                enable_dynamic_solve=False)
         guess = u.vector()
         energy = pde.energy(u)
         energy_density.append(energy / pow(args.n_cells * args.L0, 2))
@@ -83,4 +108,10 @@ def solver_fluctuation(args, void_shape, anneal_factors, def_grad):
 
 if __name__ == '__main__':
     args = arguments.args
-    simulate_periodic(args)
+    args.relaxation_parameter = 0.1
+    args.max_newton_iter = 1000
+    args.n_cells = 4
+    args.enable_fast_solve = True
+    args.gradient = False
+    args.metamaterial_mesh_size = 15
+    simulate_full(args)

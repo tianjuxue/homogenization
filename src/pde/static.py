@@ -29,36 +29,23 @@ class Metamaterial(PDE):
                                     args.min_feature_size,
                                     args.pore_radial_resolution)
 
-
-        # r0 = L0 * math.sqrt(2 * porosity) / math.sqrt(math.pi *
-        #                                               (2 + c1**2 + c2**2))
-
-        # def coords_fn(theta):
-        #     return r0 * (1 + c1 * fa.cos(4 * theta) + c2 * fa.cos(8 * theta))
-
-        # base_pore_points, radii, thetas = build_base_pore(
-        #     coords_fn, pore_radial_resolution)
-
-        # verify_params(base_pore_points, radii, L0, min_feature_size)
-
         material_domain = None
         pore_domain = None
 
+        r0 = L0 * math.sqrt(2 * porosity) / math.sqrt(math.pi *
+                                                      (2 + c1**2 + c2**2))
+
+        def coords_fn(theta):
+            return r0 * (1 + c1 * fa.cos(4 * theta) + c2 * fa.cos(8 * theta))
+
+        base_pore_points, radii, thetas = build_base_pore(
+                    coords_fn, pore_radial_resolution)
+
         for i in range(n_cells):
             for j in range(n_cells):
-
                 if args.gradient:
                     c1 = (j + 0.5) / n_cells * -0.2
                     c2 = (j + 0.5) / n_cells * 0.2
-
-                r0 = L0 * math.sqrt(2 * porosity) / math.sqrt(math.pi *
-                                                              (2 + c1**2 + c2**2))
-
-                def coords_fn(theta):
-                    return r0 * (1 + c1 * fa.cos(4 * theta) + c2 * fa.cos(8 * theta))
-
-                base_pore_points, radii, thetas = build_base_pore(
-                    coords_fn, pore_radial_resolution)
 
                 pore = build_pore_polygon(
                     base_pore_points, offset=(L0 * (i + 0.5), L0 * (j + 0.5)))
@@ -72,14 +59,30 @@ class Metamaterial(PDE):
                 material_domain = (material_in_cell if not material_domain else
                                    material_in_cell + material_domain)
 
-        mesh = mshr.generate_mesh(material_domain, resolution * n_cells)
+        if args.padding:
+            for j in range(n_cells):
+                pore = build_pore_polygon(
+                    base_pore_points, offset=(L0 * (-0.5), L0 * (j + 0.5)))
+                cell = mshr.Rectangle(
+                    fa.Point(L0 * -0.5, L0 * j),
+                    fa.Point(0, L0 * (j + 1)))
+                material_in_cell = cell - pore
+                material_domain += material_in_cell
 
+                pore = build_pore_polygon(
+                    base_pore_points, offset=(L0 * (n_cells + 0.5), L0 * (j + 0.5)))
+                cell = mshr.Rectangle(
+                    fa.Point(L0 * n_cells, L0 * j),
+                    fa.Point(L0 * (n_cells + 0.5), L0 * (j + 1)))
+                material_in_cell = cell - pore
+                material_domain += material_in_cell              
+
+        mesh = mshr.generate_mesh(material_domain, resolution * n_cells)
         self.mesh = mesh
 
         # print(mesh.num_cells())
         # print(mesh.num_vertices())
         # exit()
-
 
 
     def _build_function_space(self):
@@ -127,7 +130,6 @@ class Metamaterial(PDE):
         class UpperRight(fa.SubDomain):
             def inside(self, x, on_boundary):                    
                 return fa.near(x[0], L0 * n_cells) and fa.near(x[1], L0 * n_cells)            
-
 
         class PeriodicDomain(fa.SubDomain):
 
@@ -192,7 +194,11 @@ class Metamaterial(PDE):
         stress_11 = fa.assemble(fa.dot(first_pk_stress, self.normal)[0]*self.ds(2))
         stress_12 = fa.assemble(fa.dot(first_pk_stress, self.normal)[1]*self.ds(2))
         stress_21 = fa.assemble(fa.dot(first_pk_stress, self.normal)[0]*self.ds(4))
-        stress_22 = fa.assemble(fa.dot(first_pk_stress, self.normal)[1]*self.ds(4))                        
+        stress_22 = fa.assemble(fa.dot(first_pk_stress, self.normal)[1]*self.ds(4))    
+
+        # Change log
+        # stress_22 = fa.assemble(first_pk_stress[1, 1]*fa.dx)
+
         return np.array([[stress_11, stress_12], [stress_21, stress_22]])
 
 
@@ -214,20 +220,3 @@ def build_pore_polygon(base_pore_points, offset):
     pore = mshr.Polygon(points)
     return pore
 
-
-def verify_params(pore_points, radii, L0, min_feature_size):
-    '''Verify that params correspond to a geometrically valid structure'''
-    # check Constraint A
-    tmin = L0 - 2 * pore_points[:, 1].max()
-    if tmin / L0 <= min_feature_size:
-        raise ValueError("Minimum material thickness violated. Params do not "
-                         "satisfy Constraint A from Overvelde & Bertoldi")
-
-    # check Constraint B
-    # Overvelde & Bertoldi check that min radius > 0.
-    # we check it is > min_feature_size > 2.0, so min_feature_size can be used
-    # to ensure the material can be fabricated
-    if radii.min() <= min_feature_size / 2.0:
-        raise ValueError("Minimum pore thickness violated. Params do not "
-                         "satisfy (our stricter version of) Constraint B "
-                         "from Overvelde & Bertoldi")

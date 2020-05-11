@@ -10,7 +10,15 @@ from ..pde.static import Metamaterial
 
 def solver_fluctuation(args):
     args.c1, args.c2 = args.void_shape
-    pde = Metamaterial(args)
+
+    pore_type = 0 if np.sum(np.absolute(args.void_shape)) < 1e-3  else 2 
+    mesh_name = 'plots/new_data/mesh/RVE_size' + str(args.n_cells) + '_pore' + str(pore_type) + '.xml'
+    if os.path.isfile(mesh_name):
+        mesh = fa.Mesh(mesh_name)
+    else:
+        mesh = None    
+
+    pde = Metamaterial(args, mesh)
     boundary_fn = fa.Constant((0, 0))
     energy_density = []
 
@@ -44,6 +52,9 @@ def solver_fluctuation(args):
             energy = pde.energy(u)
             energy_density.append(energy / pow(args.n_cells * args.L0, 2))
 
+    if not os.path.isfile(mesh_name):
+        fa.File(mesh_name) << pde.mesh
+            
     e11, e12, e21, e22 = args.def_grad
     affine_fn = fa.Expression(('e11*x[0] + e12*x[1]', 'e21*x[0] + e22*x[1]'),
                               e11=e11, e12=e12, e21=e21, e22=e22, degree=2)
@@ -114,7 +125,7 @@ def collect_sobol(args, path, get_parameters):
 
     total_number_samples = 5000
     vec = sobol_seq.i4_sobol_generate(4, total_number_samples)
-    start = 500
+    start = 4084
     print("total_number_samples is", total_number_samples)
     for i in range(start, total_number_samples):
         print("\n#####################################################################")
@@ -131,7 +142,6 @@ if __name__ == '__main__':
     args.n_cells = 2
     args.fluctuation = True
     args.enable_fast_solve = True
-    args.gradient = False
     args.metamaterial_mesh_size = 15
     # collect_sobol(args, path='saved_data_pore0_sobol_dr', get_parameters=get_parameters_pore0)
     collect_sobol(args, path='saved_data_pore2_sobol_dr', get_parameters=get_parameters_pore2)

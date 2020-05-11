@@ -14,16 +14,15 @@ def run_and_save(size):
     generator = Generator(args)
     generator.args.relaxation_parameter = 0.1
     generator.args.max_newton_iter = 2000
-    generator.enable_fast_solve = False
+    generator.enable_fast_solve = True
     generator.args.n_cells = size
     generator.args.metamaterial_mesh_size = 15
     generator.args.fluctuation = False
-    generator.args.F_list_fixed = [[-0., -0.], [0., -0.1]]
-    generator.args.gradient = False
-    generator.anneal_factors = np.linspace(0, 1, 11)
+    generator.args.padding = True
+    generator.anneal_factors = np.linspace(0, 1, 21)
     generator.def_grad = np.array([0, 0, 0, -0.1])
     generator.void_shape = np.array([-0., 0.])
-    energy_density, force = generator._anealing_solver_disp(return_force=True)
+    energy_density, force, sols = generator._anealing_solver_disp(return_all=True)
     end = time.time()
     t_total = end - start
     t_mesh = generator.pde.time_elapsed
@@ -37,7 +36,7 @@ def run_and_save(size):
 
 
 def simulate():
-    sizes = [2, 4, 8, 16]
+    sizes = [8]
     time_total = []
     time_mesh = []
     for size in sizes:
@@ -62,38 +61,42 @@ def plot_results_time():
     ax.plot(sizes, time_mesh, linestyle='--', marker='o', color='blue')
     ax.set_xscale('log')
     ax.set_yscale('log')
-
-    # labels = ['A', 'B', 'C', 'D']
-    # ax.set_xticks(sizes)
-    # ax.set_xticklabels(labels)
     ax.tick_params(axis='x', which=u'both',length=0)
     ax.tick_params(labelsize=16)    
     ax.axes.xaxis.set_visible(False)
 
 
 def plot_results_force():
-    NN_force_com_pore0 = np.load('plots/new_data/numpy/force/NN_force_com_pore0.npy') 
-    strain_com = np.linspace(0, -0.1, len(NN_force_com_pore0))
-
     fig = plt.figure(0)
     plt.tick_params(labelsize=14)
-    plt.plot(strain_com, (NN_force_com_pore0 - NN_force_com_pore0[0]), '--', color='blue', label='NN ' + r'$\xi_a$')
+
+    NN_force_com_pore0 = np.load('plots/new_data/numpy/force/NN_force_com_pore0.npy') 
+    plt.plot(np.linspace(0, -0.1, len(NN_force_com_pore0)), (NN_force_com_pore0 - NN_force_com_pore0[0]), '--', color='blue')
 
     sizes = np.load('plots/new_data/numpy/size_effect/sizes.npy')
-    colors = ['orange', 'red', 'green', 'purple']
+    sizes = [6, 8, 10]
+    colors = ['orange', 'blue', 'red', 'purple']
     for i, sz in enumerate(sizes):
         DNS_force_com_pore0 = np.load('plots/new_data/numpy/size_effect/' + 'DNS_force_com_pore0_size' + str(sz)  + '.npy')
-        plt.plot(strain_com, (DNS_force_com_pore0 - DNS_force_com_pore0[0]), '-', color=colors[i], label='NN ' + r'$\xi_a$')
+        # plt.plot(np.linspace(0, -0.1, len(DNS_force_com_pore0)), (DNS_force_com_pore0 - DNS_force_com_pore0[0]), linestyle='--', marker='o', color=colors[i])
+        plt.plot(np.linspace(0, -0.1, len(DNS_force_com_pore0)), (DNS_force_com_pore0 - DNS_force_com_pore0[0]), linestyle='-', color=colors[i])
+
+def plot_custom_force():
+    DNS_force_com_pore0 = np.load('plots/new_data/numpy/size_effect/DNS_force_com_pore0_size4.npy') 
+    plt.plot(np.linspace(0, -0.1, len(DNS_force_com_pore0)), (DNS_force_com_pore0 - DNS_force_com_pore0[0]), linestyle='--', marker='o', color='blue')
+
+    DNS_force_com_pore0 = np.load('plots/new_data/numpy/size_effect/DNS_force_com_pore0_size4_dr.npy') 
+    plt.plot(np.linspace(0, -0.1, len(DNS_force_com_pore0)), (DNS_force_com_pore0 - DNS_force_com_pore0[0]), linestyle='--', marker='o', color='red')
 
 
 def run():
-    run_simulation = False
-    if run_simulation:
-        simulate()
+    simulate()
     # plot_results_time()
-    plot_results_force()
+    # plot_results_force()
     plt.show()
+
 
 if __name__ == '__main__':
     args = arguments.args
+    # fa.set_log_level(20)
     run()

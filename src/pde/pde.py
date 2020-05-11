@@ -1,7 +1,8 @@
 """Base class for PDEs"""
 import fenics as fa
 import time
-from .dr_solve import DynamicRelaxSolve
+from .dr_solve_homo import DynamicRelaxSolve
+from .dr_solve_inhomo import dynamic_relaxation_solve
 
 
 class PDE(object):
@@ -12,15 +13,15 @@ class PDE(object):
         self.args = args
         # self.args.fluctuation = False
         # self.args.F_list = None
+        start = time.time()
         if mesh is None:
-            start = time.time()
             self._build_mesh()
-            end = time.time()
-            self.time_elapsed = end - start 
         else:
             self.mesh = mesh
-        # TODO(Tianju): Change these member variables
+        end = time.time()
+        self.time_elapsed = end - start
 
+        # TODO(Tianju): Change these member variables
         self._build_function_space()
         self._create_boundary_measure()
 
@@ -75,81 +76,50 @@ class PDE(object):
 
         if boundary_point_fn is not None:
             for corner in self.corner_dic:
-                boundary_bc = fa.DirichletBC(self.V, 
-                                             boundary_point_fn, 
-                                             corner, 
+                # for corner in self.points_dic:
+                boundary_bc = fa.DirichletBC(self.V,
+                                             boundary_point_fn,
+                                             corner,
                                              method='pointwise')
                 bcs = bcs + [boundary_bc]
 
         # If boundary functions are defined separately for four edges
         if boundary_fn_dic is not None:
             for key in boundary_fn_dic:
-                boundary_bc = fa.DirichletBC(self.V, boundary_fn_dic[key], self.exteriors_dic[key])
+                boundary_bc = fa.DirichletBC(self.V, boundary_fn_dic[
+                                             key], self.exteriors_dic[key])
                 bcs = bcs + [boundary_bc]
 
         bcs_homo = []
         if boundary_fn_dic is not None:
             for key in boundary_fn_dic:
-                boundary_bc = fa.DirichletBC(self.V, fa.Constant((0, 0)), self.exteriors_dic[key])
+                boundary_bc = fa.DirichletBC(
+                    self.V, fa.Constant((0, 0)), self.exteriors_dic[key])
                 bcs_homo = bcs_homo + [boundary_bc]
 
         dE = fa.derivative(E, u, v)
         jacE = fa.derivative(dE, u, du)
 
-        newton_args = {
-            'relaxation_parameter': self.args.relaxation_parameter,
-            'linear_solver': self.args.linear_solver,
-            'maximum_iterations': self.args.max_newton_iter,
-            'relative_tolerance': 1e-5,
-            'absolute_tolerance': 1e-5
-        }
-
-        solver_args = {
-            'nonlinear_solver': self.args.nonlinear_solver,
-            'newton_solver': newton_args
-        }
-
-
-        solver_args_snes = \
-        {
-            "nonlinear_solver": "snes",
-            "snes_solver": 
-            {
-                "linear_solver": "umfpack",
-                "maximum_iterations": self.args.max_snes_iter,
-                "report": True,
-                "error_on_nonconvergence": False,
-                "line_search":"basic",
-                "relative_tolerance":1.e-8,
-                "absolute_tolerance":1.e-8,
-                "preconditioner" : "default",
-                "krylov_solver":
-                {
-                    "report":True,
-                    "nonzero_initial_guess" : False
-                }
-            },
-        }
-
-
         fa.parameters["form_compiler"]["cpp_optimize"] = True
-
-        ffc_options = {"optimize": True, \
-                       "eliminate_zeros": True, \
-                       "precompute_basis_const": True, \
+        ffc_options = {"optimize": True,
+                       "eliminate_zeros": True,
+                       "precompute_basis_const": True,
                        "precompute_ip_const": True}
 
         if enable_fast_solve:
             if enable_dynamic_solve:
-                nIters, convergence = DynamicRelaxSolve(dE, u, bcs, jacE)
+                if self.args.fluctuation:
+                    nIters, convergence = DynamicRelaxSolve(dE, u, bcs, jacE)
+                else:
+                    nIters, convergence = dynamic_relaxation_solve(dE, u, jacE, bcs, bcs_homo)
                 if not convergence:
                     assert(False)
             else:
                 fa.solve(dE == 0, u, bcs, J=jacE,
-                        form_compiler_parameters=ffc_options)                
+                         form_compiler_parameters=ffc_options)
         else:
             fa.solve(dE == 0, u, bcs, J=jacE,
-                     form_compiler_parameters=ffc_options, 
-                     solver_parameters=solver_args)
-
+                     form_compiler_parameters=ffc_options,
+                     solver_parameters={'newton_solver': {'relaxation_parameter': self.args.relaxation_parameter,
+                                         'maximum_iterations': self.args.max_newton_iter}})
         return u

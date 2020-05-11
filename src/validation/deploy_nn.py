@@ -119,14 +119,12 @@ def manual_gpr(network, C_list):
     #           (x[3] / l[3] - C_list[3] / l[3])**2
     #     result1 += sigma_f**2 * ufl.operators.exp(-0.5 * tmp) * v[i + 900]
 
-
     # for i, x in enumerate(X_train[1800:2700]):
     #     tmp = (x[0] / l[0] - C_list[0] / l[0])**2 + \
     #           (x[1] / l[1] - C_list[1] / l[1])**2 + \
     #           (x[2] / l[2] - C_list[2] / l[2])**2 + \
     #           (x[3] / l[3] - C_list[3] / l[3])**2
     #     result2 += sigma_f**2 * ufl.operators.exp(-0.5 * tmp) * v[i + 1800]
-
 
     # for i, x in enumerate(X_train[2700:]):
     #     tmp = (x[0] / l[0] - C_list[0] / l[0])**2 + \
@@ -175,6 +173,8 @@ def homogenization(args, disp, pore_flag):
 
     print("Start to solve with disp={:.6f} and pore_flag={}".format(
         disp, pore_flag))
+    # new_universal for numerical vals, normal fig
+    # shear for shear fig
     # model_path = args.checkpoints_path + '/model_step_2000'
     model_path = 'saved_checkpoints_tmp/new_universal'
     network = torch.load(model_path)
@@ -226,7 +226,8 @@ def homogenization(args, disp, pore_flag):
     energy, stress = get_energy(u, pore_flag, network, V)
     energy_ref = assemble(energy * dx)
     # print("Total energy (reference) is", energy_ref)
-    force_ref = assemble(dot(stress, normal)[1] * ds(4))
+    force_ref = assemble(dot(stress, normal)[1] * ds(4)) / (args.n_macro * args.L0)
+    # force_ref = assemble(stress[1, 1] * dx) / pow(args.n_macro * args.L0, 2)
     # print("Total force (reference) is", force_ref)
 
     initial_value = 0
@@ -240,35 +241,26 @@ def homogenization(args, disp, pore_flag):
     F = derivative(Energy, u, v)
     J = derivative(F, u, du)
 
-    newton_args = {
-        'relaxation_parameter': args.relaxation_parameter,
-        'linear_solver': args.linear_solver,
-        'maximum_iterations': args.max_newton_iter,
-        "relative_tolerance": 1e-4,
-        "absolute_tolerance": 1e-4
-    }
-    solver_args = {
-        'nonlinear_solver': args.nonlinear_solver,
-        'newton_solver': newton_args
-    }
-
     parameters["form_compiler"]["cpp_optimize"] = True
-
     ffc_options = {"optimize": True,
                    "eliminate_zeros": True,
                    "precompute_basis_const": True,
                    "precompute_ip_const": True}
 
+    # "relative_tolerance": 1e-4,
+    # "absolute_tolerance": 1e-4
     solve(F == 0, u, bcs, J=J,
-          solver_parameters=solver_args,
-          form_compiler_parameters=ffc_options)
+          form_compiler_parameters=ffc_options,
+          solver_parameters={'newton_solver': {'relaxation_parameter': args.relaxation_parameter,
+                                               'maximum_iterations': args.max_newton_iter}})
 
     energy_def = assemble(energy * dx)
 
     # print("Total energy (deformed) is", energy_def)
     # print("Average energy density is",
     #       assemble(energy * dx) / (args.n_macro * args.L0)**2)
-    force_def = assemble(dot(stress, normal)[1] * ds(4))
+    force_def = assemble(dot(stress, normal)[1] * ds(4)) / (args.n_macro * args.L0)
+    # force_def = assemble(stress[1, 1] * dx) / pow(args.n_macro * args.L0, 2)
     # print("Total force (deformed) is", force_def)
 
     # energy_rel = energy_def
@@ -284,15 +276,16 @@ def homogenization(args, disp, pore_flag):
     u.rename('u', 'u')
     file << u
 
-    return energy_rel, force_rel, u
+    return energy_rel, force_rel, u, mesh
 
 
 def run_and_save(factors, disp, pore_flag, name):
     start = time.time()
     energy_list = []
     force_list = []
+    # u, mesh
     for factor in factors:
-        energy, force, u = homogenization(args, disp * factor, pore_flag)
+        energy, force, u, mesh = homogenization(args, disp * factor, pore_flag)
         energy_list.append(energy)
         force_list.append(force)
 
@@ -303,9 +296,14 @@ def run_and_save(factors, disp, pore_flag, name):
     np.save('plots/new_data/numpy/energy/' + name + '_energy_' + deform_info +
             '_pore' + str(pore_flag) + '.npy', np.asarray(energy_list) / pow(args.n_macro * args.L0, 2))
     np.save('plots/new_data/numpy/force/' + name + '_force_' + deform_info +
-            '_pore' + str(pore_flag) + '.npy', np.asarray(force_list) / (args.n_macro * args.L0))
+            '_pore' + str(pore_flag) + '.npy', np.asarray(force_list))
     np.save('plots/new_data/numpy/time/' + name + '_time_' + deform_info +
             '_pore' + str(pore_flag) + '.npy', np.asarray(time_elapsed))
+
+    File('plots/new_data/sol/post_processing/' + name + '_mesh_' +
+         deform_info + '_pore' + str(pore_flag) + '.xml') << mesh
+    File('plots/new_data/sol/post_processing/' + name + '_sol_' +
+         deform_info + '_pore' + str(pore_flag) + '.xml') << u
 
     print('energy_list', energy_list)
     print('force_list', force_list)
@@ -328,9 +326,8 @@ if __name__ == '__main__':
     args.max_newton_iter = 2000
 
     run()
+    # energy, force, u, _ = homogenization(args, disp=-0.1, pore_flag=2)
     # run_and_save(np.linspace(0, 1, 11), disp=-0.14, pore_flag=0, name='NN')
-    energy, force, u = homogenization(args, disp=-0.1, pore_flag=2)
-
 
     # # GPR related
     # params = np.load('plots/new_data/numpy/gpr/para.npz')
@@ -339,5 +336,5 @@ if __name__ == '__main__':
     # X_train = params['X_train']
     # v = params['v']
     # run()
-    # energy, force, u = homogenization(args, disp=-0.1, pore_flag=2)
+    # energy, force, u, _ = homogenization(args, disp=-0.1, pore_flag=2)
     # # run_and_save(np.linspace(0, 1, 11), disp=-0.14, pore_flag=0, name='NN')

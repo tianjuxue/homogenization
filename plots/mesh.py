@@ -8,13 +8,6 @@ from matplotlib.patches import Circle, Wedge, Polygon
 from matplotlib.collections import PatchCollection
 from vtk.util.numpy_support import vtk_to_numpy
 
-def create_horizontal_points(vertical_index):
-    points = [(i*segment, vertical_index*L0) for i in range(0, resolution*n_cells + 1)]
-    return np.asarray(points)
-
-def create_vertical_points(horizontal_index):
-    points = [(horizontal_index*L0, i*segment) for i in range(0, resolution*n_cells + 1)]
-    return np.asarray(points)
 
 if __name__ == '__main__':
 
@@ -42,23 +35,5 @@ if __name__ == '__main__':
     # plt.triplot(x[:,0], x[:,1], tri, marker='o', markersize=1, linewidth=0.5, color='r')
     plt.gca().set_aspect('equal')
     plt.axis('off')
-
-    # homemade plot
-    # L0 = 0.5 * 8
-    # n_cells = 1
-    # resolution = 1
-    # segment = L0/resolution
-
-    # for i in range(0, n_cells + 1):
-    #     points = create_horizontal_points(i)
-    #     plt.plot(points[:,0], points[:, 1], marker ='o', markersize=2, linewidth=1, color='b')
-
-    # for i in range(0, n_cells + 1):
-    #     points = create_vertical_points(i)
-    #     plt.plot(points[:,0], points[:, 1], marker ='o', markersize=2, linewidth=1, color='b')
-
-    # plt.axis('off')
-    # plt.axis('equal')
-    # fig.savefig("poisson.pdf", bbox_inches='tight')
 
     plt.show()
