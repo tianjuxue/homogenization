@@ -5,6 +5,7 @@ saved*
 .DS_Store
 *.pvd
 *.vtu
+*.xml
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
