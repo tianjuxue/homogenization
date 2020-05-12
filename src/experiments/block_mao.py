@@ -43,7 +43,7 @@ if __name__ == '__main__':
 
     dl.set_log_level(20)
 
-    meshfile = "plots/new_data/mesh/DNS_size16_pore0"
+    meshfile = "plots/new_data/mesh/DNS_size8_pore0"
     mesh = dl.Mesh(meshfile + ".xml")
     # subdomains = dl.MeshFunction("size_t", mesh, meshfile + "_physical_region.xml")
 
@@ -86,15 +86,16 @@ if __name__ == '__main__':
     PKForm = (PK(F))[1, 1] * dx  # + (PK(1, I, F, p, nFiber))[0][1, 1]*dx(1)
 
     # steps = np.concatenate((np.linspace(0, 0.06, 7), np.linspace(0.06, 0.1, 15)))
+    # for i in range(20):
+    #     if deltaU < 0.06*W:
+    #         deltaU += 0.01*W
+    #     else:
+    #         deltaU += 0.04 / 2
 
-    for i in range(20):
-        if deltaU < 0.06*W:
-            deltaU += 0.01*W
-        else:
-            deltaU += 0.04 / 2
+    steps = np.linspace(0, 0.1, 31)
 
-    # for i, s in enumerate(steps):
-    #     deltaU = s * W
+    for i, s in enumerate(steps):
+        deltaU = s * W
 
         print("\nStep {}".format(i))
         # print("Relative disp {}".format(-s))

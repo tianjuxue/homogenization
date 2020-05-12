@@ -6,6 +6,7 @@ saved*
 *.pvd
 *.vtu
 *.xml
+*.png
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

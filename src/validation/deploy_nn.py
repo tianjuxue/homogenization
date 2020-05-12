@@ -93,11 +93,10 @@ def layer(x, weights, bias, id):
 
 
 def manual_nn(network, x):
-    x = layer(x, network.fc1.weight, network.fc1.bias, 1)
-    x = layer(x, network.fc2.weight, network.fc2.bias, 2)
-    assert (len(x) == 1)
-    return x[0]
-
+    x1 = layer(x, network.fc1.weight, network.fc1.bias, 1)
+    x2 = layer(x1, network.fc2.weight, network.fc2.bias, 2)
+    assert (len(x2) == 1)
+    return x2[0]
 
 def manual_gpr(network, C_list):
     result0 = 0
@@ -166,7 +165,7 @@ def get_energy(u, pore_flag, network, V):
     return energy, stress
 
 
-def homogenization(args, disp, pore_flag):
+def homogenization(args, disp, pore_flag, file):
     # pore_flag = 0 means pore A
     # pore_flag = 1 means pore B
     # pore_flag = 2 means mixed
@@ -175,7 +174,7 @@ def homogenization(args, disp, pore_flag):
         disp, pore_flag))
     # new_universal for numerical vals, normal fig
     # shear for shear fig
-    # model_path = args.checkpoints_path + '/model_step_2000'
+    # model_path = args.checkpoints_path + '/model_step_1000'
     model_path = 'saved_checkpoints_tmp/new_universal'
     network = torch.load(model_path)
 
@@ -188,9 +187,10 @@ def homogenization(args, disp, pore_flag):
     }
 
     # Create mesh and define function space
-    mesh = UnitSquareMesh(10, 10)
     mesh = RectangleMesh(Point(0, 0), Point(
-        args.n_macro * args.L0, args.n_macro * args.L0), 10, 10)
+        args.n_macro * args.L0, args.n_macro * args.L0), 8, 8, diagonal='crossed')
+    # mesh = RectangleMesh(Point(0, 0), Point(
+    #     args.n_macro * args.L0, args.n_macro * args.L0), 10, 10)
 
     V = VectorFunctionSpace(mesh, "Lagrange", 1)
 
@@ -227,12 +227,11 @@ def homogenization(args, disp, pore_flag):
     energy_ref = assemble(energy * dx)
     # print("Total energy (reference) is", energy_ref)
     force_ref = assemble(dot(stress, normal)[1] * ds(4)) / (args.n_macro * args.L0)
-    # force_ref = assemble(stress[1, 1] * dx) / pow(args.n_macro * args.L0, 2)
     # print("Total force (reference) is", force_ref)
 
     initial_value = 0
     if disp < 0 and pore_flag == 2:
-        initial_value = 0.2
+        initial_value = 0.5
     initial_exp = KinkExpression(initial_value, disp)
     u = interpolate(initial_exp, V)
     energy, stress = get_energy(u, pore_flag, network, V)
@@ -247,12 +246,15 @@ def homogenization(args, disp, pore_flag):
                    "precompute_basis_const": True,
                    "precompute_ip_const": True}
 
+    # Could lead to completely different results
     # "relative_tolerance": 1e-4,
     # "absolute_tolerance": 1e-4
     solve(F == 0, u, bcs, J=J,
           form_compiler_parameters=ffc_options,
           solver_parameters={'newton_solver': {'relaxation_parameter': args.relaxation_parameter,
-                                               'maximum_iterations': args.max_newton_iter}})
+                                               'maximum_iterations': args.max_newton_iter,
+                                               "relative_tolerance": 1e-4,
+                                               "absolute_tolerance": 1e-4}})
 
     energy_def = assemble(energy * dx)
 
@@ -260,7 +262,6 @@ def homogenization(args, disp, pore_flag):
     # print("Average energy density is",
     #       assemble(energy * dx) / (args.n_macro * args.L0)**2)
     force_def = assemble(dot(stress, normal)[1] * ds(4)) / (args.n_macro * args.L0)
-    # force_def = assemble(stress[1, 1] * dx) / pow(args.n_macro * args.L0, 2)
     # print("Total force (deformed) is", force_def)
 
     # energy_rel = energy_def
@@ -272,9 +273,9 @@ def homogenization(args, disp, pore_flag):
     # print("Total force (relative) is", force_rel)
 
     # Save solution in VTK format
-    file = File("u.pvd")
-    u.rename('u', 'u')
-    file << u
+    if disp < 0 and file is not None:
+        u.rename('u', 'u')
+        file << (u, -disp)
 
     return energy_rel, force_rel, u, mesh
 
@@ -284,8 +285,9 @@ def run_and_save(factors, disp, pore_flag, name):
     energy_list = []
     force_list = []
     # u, mesh
+    file = File('tmp/u_nn_pore{}_.pvd'.format(pore_flag))
     for factor in factors:
-        energy, force, u, mesh = homogenization(args, disp * factor, pore_flag)
+        energy, force, u, mesh = homogenization(args, disp * factor, pore_flag, file)
         energy_list.append(energy)
         force_list.append(force)
 
@@ -322,11 +324,11 @@ def run():
 if __name__ == '__main__':
     args = arguments.args
     args.n_macro = 8
-    args.relaxation_parameter = 0.1
+    args.relaxation_parameter = 0.6
     args.max_newton_iter = 2000
-
+    # set_log_level(20)
     run()
-    # energy, force, u, _ = homogenization(args, disp=-0.1, pore_flag=2)
+    # energy, force, u, _ = homogenization(args, disp=-0.1, pore_flag=2, file=None)
     # run_and_save(np.linspace(0, 1, 11), disp=-0.14, pore_flag=0, name='NN')
 
     # # GPR related
@@ -337,4 +339,4 @@ if __name__ == '__main__':
     # v = params['v']
     # run()
     # energy, force, u, _ = homogenization(args, disp=-0.1, pore_flag=2)
-    # # run_and_save(np.linspace(0, 1, 11), disp=-0.14, pore_flag=0, name='NN')
+    # # run_and_save(np.linspace(0, 1, 11), disp=-0.14, pore_flag=0, name='NN',file=None)

@@ -58,6 +58,23 @@ def manual_gpr(network, C_list):
 
     return result0 + result1 + result2 + result3 + result4 + result5 + result6
 
+
+# Put constraint for large deformation - energy must be very large
+def manual_nn(network, x):
+    x1 = layer(x, network.fc1.weight, network.fc1.bias, 1)
+    x2 = layer(x1, network.fc2.weight, network.fc2.bias, 2)
+    bounds = [2, 0.65, 1.6, -1.6, 2, 0.65]
+    # bounds = [1.1, 0.9, 1.1, -1.1, 1.1, 0.9]
+    energy_bound = 1e10
+    result = x2[0]
+    result = conditional(x[0] > bounds[0], energy_bound, result)
+    result = conditional(x[0] < bounds[1], energy_bound, result)
+    result = conditional(x[1] > bounds[2], energy_bound, result)
+    result = conditional(x[1] < bounds[3], energy_bound, result)
+    result = conditional(x[2] > bounds[4], energy_bound, result)
+    result = conditional(x[2] < bounds[5], energy_bound, result)
+    return result
+
 if __name__ == '__main__':
     args = arguments.args
     args.n_macro = 8
@@ -83,3 +100,6 @@ plt.plot(np.linspace(0, -0.1, len(DNS_force_com_pore0)), (DNS_force_com_pore0 - 
 
 DNS_force_com_pore0 = np.load('plots/new_data/numpy/size_effect/' + 'DNS_force_com_pore0_size' + str(8)  + '_bad.npy')
 plt.plot(np.linspace(0, -0.1, len(DNS_force_com_pore0)), (DNS_force_com_pore0 - DNS_force_com_pore0[0]), linestyle='--', marker='o', color='red')
+
+
+

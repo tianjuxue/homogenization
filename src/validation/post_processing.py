@@ -63,7 +63,7 @@ def get_disp(args, point, mesh, disp_sol):
     return ux, uy
 
 
-def run_single(args, points_ref, name, deform_info, pore_flag):
+def run_single_python(args, points_ref, name, deform_info, pore_flag):
     N = len(points_ref)
     mesh = fa.Mesh('plots/new_data/sol/post_processing/' + name + '_mesh_' +
                    deform_info + '_pore' + str(pore_flag) + '.xml')
@@ -81,13 +81,12 @@ def run_single(args, points_ref, name, deform_info, pore_flag):
     return points_def
 
 
-def run(args):
-    L0 = 0.5
+def run_python_plot(args):
     points_ref = create_RVE_centers(args)
-    points_def_DNS_pore0 = run_single(args, points_ref, 'DNS', 'com', 0)
-    points_def_DNS_pore2 = run_single(args, points_ref, 'DNS', 'com', 2)
-    points_def_NN_pore0 = run_single(args, points_ref, 'NN', 'com', 0)
-    points_def_NN_pore2 = run_single(args, points_ref, 'NN', 'com', 2)
+    points_def_DNS_pore0 = run_single_python(args, points_ref, 'DNS', 'com', 0)
+    points_def_DNS_pore2 = run_single_python(args, points_ref, 'DNS', 'com', 2)
+    points_def_NN_pore0 = run_single_python(args, points_ref, 'NN', 'com', 0)
+    points_def_NN_pore2 = run_single_python(args, points_ref, 'NN', 'com', 2)
 
     fig = plt.figure(0)
     vis_single(points_def_DNS_pore0, 'blue')
@@ -106,6 +105,38 @@ def run(args):
     # plt.show()
 
 
+def run_single_paraview(args, points_ref, name, deform_info, pore_flag):
+    N = len(points_ref)
+    mesh = fa.Mesh('plots/new_data/sol/post_processing/' + name + '_mesh_' +
+                   deform_info + '_pore' + str(pore_flag) + '.xml')
+    V = fa.VectorFunctionSpace(mesh, 'P', 1)
+    disp_sol = fa.Function(V, 'plots/new_data/sol/post_processing/' + name + '_sol_' +
+                           deform_info + '_pore' + str(pore_flag) + '.xml')
+    mesh_avg = fa.RectangleMesh(fa.Point(args.L0, args.L0), fa.Point((2*N-1) * args.L0, (2*N-1) * args.L0), N - 1, N - 1)
+    V_avg = fa.VectorFunctionSpace(mesh_avg, 'P', 1)
+    u_avg = fa.Function(V_avg)
+
+    dofs =  V_avg.dofmap().dofs()
+    dofs_x = V_avg.tabulate_dof_coordinates().reshape((len(dofs), -1))
+    for i, dof_x in enumerate(dofs_x):
+        ux, uy = get_disp(args, dof_x, mesh, disp_sol)
+        if i % 2 == 0:
+            u_avg.vector()[i] = ux
+        else:
+            u_avg.vector()[i] = uy
+
+    file2 = fa.File('u_DNS.pvd')
+    file2 << u_avg
+    file1 = fa.File('disp_sol.pvd')
+    file1 << disp_sol
+
+    # file2 = fa.File('mesh_DNS.pvd')
+    # file2 << mesh_DNS
+
+def run_paraview_plot(args):
+    points_ref = create_RVE_centers(args)
+    run_single_paraview(args, points_ref, 'DNS', 'com', 0)
+
 if __name__ == '__main__':
     args = arguments.args
-    run(args)
+    run_paraview_plot(args)

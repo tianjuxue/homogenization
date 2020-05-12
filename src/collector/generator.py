@@ -92,7 +92,6 @@ class SinPoreExpression(fa.UserExpression):
 
 
 class Generator(object):
-
     def __init__(self, args):
         self.args = args
         self.n_cells_array = np.array([2, 3, 4])
@@ -120,15 +119,6 @@ class Generator(object):
         self.predicted_energy_all = self._anealing_solver_fluctuation()
         return self.def_grad_all, self.void_shape_all, self.predicted_energy_all
 
-    # def _get_factor(self, pde):
-    #     x_vals = np.linspace(0, 1, 11)
-    #     for x_val in x_vals:
-    #         sin_pore_exp = SinPoreExpression(self.args, x_val * 0.4)
-    #         u = fa.interpolate(sin_pore_exp, pde.V)
-    #         energy = pde.energy(u)
-    #         file = fa.File("u.pvd")
-    #         file << u
-    #         print(energy)
 
     def _anealing_solver_fluctuation(self, return_force=False):
         self.args.c1, self.args.c2 = self.void_shape
@@ -271,7 +261,7 @@ class Generator(object):
             if return_all:
                 self.force.append(pde.force(u))
                 self.sols.append(u)
-                
+
             u.rename('u', 'u')
             file << (u, i)
 

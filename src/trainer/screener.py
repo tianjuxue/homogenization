@@ -18,11 +18,11 @@ def get_features_C(Xin):
 
 
 def load_data_all(args, rm_dup=False, middle=False):
-    
+
     DATA_PATH_normal = 'saved_data_normal'
     DATA_PATH_middle = 'saved_data_middle'
     DATA_PATH_shear = 'saved_data_shear'
-    
+
     # DATA_PATH_normal = 'saved_data_pore0'
     # DATA_PATH_middle = 'saved_data_pore1'
     # DATA_PATH_shear = 'saved_data_pore2'
@@ -32,7 +32,7 @@ def load_data_all(args, rm_dup=False, middle=False):
 
     Xin_shear, Xout_shear = load_data_single(DATA_PATH_shear, rm_dup)
     Xin_normal, Xout_normal = load_data_single(DATA_PATH_normal, rm_dup)
-    
+
     if middle:
         Xin_middle, Xout_middle = load_data_single(DATA_PATH_middle, rm_dup)
         Xin = np.concatenate((Xin_shear, Xin_normal, Xin_middle))
@@ -40,12 +40,11 @@ def load_data_all(args, rm_dup=False, middle=False):
     else:
         Xin = np.concatenate((Xin_shear, Xin_normal))
         Xout = np.concatenate((Xout_shear, Xout_normal))
-        # Xin = Xin_shear
-        # Xout = Xout_shear
-
+ 
     args.input_dim = Xin.shape[1]
 
     print("\nTotal number of samples:", len(Xin))
+
     return Xin, Xout
 
 
@@ -115,18 +114,6 @@ def remove_dup(data):
             i = j
     return np.asarray(result)
 
-
-def random_test():
-    a = np.array([[1, 0, 0.],[1.,1,1]])
-    y = np.array([[0.],[1.]])
-    w = np.matmul(np.matmul(np.linalg.inv(np.matmul(np.transpose(a), a)), np.transpose(a)), y)
-    print(w)
-
 if __name__ == '__main__':
     args = arguments.args
-
-    random_test()
-    exit()
-
-    Xin, Xout = load_data_all(args, rm_dup=True, middle=True)
-    print(np.concatenate((Xin, Xout.reshape(-1, 1)), axis=1))
+    Xin, Xout = load_data_all(args, rm_dup=False, middle=False)

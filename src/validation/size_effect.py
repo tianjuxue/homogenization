@@ -18,9 +18,9 @@ def run_and_save(size):
     generator.args.n_cells = size
     generator.args.metamaterial_mesh_size = 15
     generator.args.fluctuation = False
-    generator.args.padding = True
+    generator.args.padding = False
     generator.anneal_factors = np.linspace(0, 1, 31)
-    generator.def_grad = np.array([0, 0, 0, -0.1])
+    generator.def_grad = np.array([0, 0, 0, -0.0])
     generator.void_shape = np.array([-0., 0.])
     energy_density, force, sols = generator._anealing_solver_disp(return_all=True)
     end = time.time()
@@ -36,7 +36,7 @@ def run_and_save(size):
 
 
 def simulate():
-    sizes = [8]
+    sizes = [32]
     time_total = []
     time_mesh = []
     for size in sizes:
@@ -92,12 +92,11 @@ def plot_custom_force():
 def run():
     simulate()
     # plot_results_time()
-    plot_results_force()
-    plt.show()
+    # plot_results_force()
+    # plt.show()
 
 
 if __name__ == '__main__':
     args = arguments.args
     # fa.set_log_level(20)
-    args.poisson_ratio = 0.499
     run()

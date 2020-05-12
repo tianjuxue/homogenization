@@ -125,7 +125,7 @@ def collect_sobol(args, path, get_parameters):
 
     total_number_samples = 5000
     vec = sobol_seq.i4_sobol_generate(4, total_number_samples)
-    start = 4084
+    start = 4723
     print("total_number_samples is", total_number_samples)
     for i in range(start, total_number_samples):
         print("\n#####################################################################")
@@ -143,5 +143,5 @@ if __name__ == '__main__':
     args.fluctuation = True
     args.enable_fast_solve = True
     args.metamaterial_mesh_size = 15
-    # collect_sobol(args, path='saved_data_pore0_sobol_dr', get_parameters=get_parameters_pore0)
-    collect_sobol(args, path='saved_data_pore2_sobol_dr', get_parameters=get_parameters_pore2)
+    collect_sobol(args, path='saved_data_pore0_sobol_dr', get_parameters=get_parameters_pore0)
+    # collect_sobol(args, path='saved_data_pore2_sobol_dr', get_parameters=get_parameters_pore2)

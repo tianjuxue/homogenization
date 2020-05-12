@@ -105,7 +105,7 @@ class Trainer(object):
         self.args.hidden_dim = hidden_dim
         self.args.lr = lr
         self.args.batch_size = bsize
-        # self.args.wd = 1e-3
+        # self.args.wd = 1e-7
 
         print("Hyper parameters: hidden_dim={}, lr={}, batch_size={}".format(
             hidden_dim, lr, bsize))
@@ -127,7 +127,7 @@ class Trainer(object):
         optimizer = torch.optim.Adam(
             model.parameters(), lr=args.lr, weight_decay=args.wd)
 
-        epoch_number = 5000
+        epoch_number = 1000
         log_interval = 100
         nTrain = len(Xin_t)
         step_number = nTrain // args.batch_size
@@ -200,10 +200,9 @@ def polynomial_regression(args):
 
 
 def training(args):
-    Xin, Xout = load_data_all(args, rm_dup=True, middle=False)
+    Xin, Xout = load_data_all(args, rm_dup=False, middle=False)
     trainer = Trainer(args, Xin, Xout)
     trainer.shuffle_data(K=10, test_ratio=0.)
-    # error = trainer.train(k=1, hidden_dim=256, lr=1e-2, bsize=32)
     error = trainer.train(k=1, hidden_dim=256, lr=1e-2, bsize=32)
 
 
@@ -211,5 +210,5 @@ if __name__ == '__main__':
     args = arguments.args
     MODEL_PATH = args.checkpoints_path
     # hyper_tuning(args)
-    # training(args)
-    polynomial_regression(args)
+    training(args)
+    # polynomial_regression(args)
