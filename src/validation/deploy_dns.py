@@ -46,9 +46,9 @@ def run_and_save(disp, pore_flag, name):
     np.save('plots/new_data/numpy/time/' + name + '_time_' + deform_info +
             '_pore' + str(pore_flag) + '.npy', time_elapsed)
 
-    fa.File('plots/new_data/sol/post_processing/' + name + '_mesh_' +
+    fa.File('plots/new_data/sol/post_processing/input/' + name + '_mesh_' +
          deform_info + '_pore' + str(pore_flag) + '.xml') << generator.pde.mesh
-    fa.File('plots/new_data/sol/post_processing/' + name + '_sol_' +
+    fa.File('plots/new_data/sol/post_processing/input/' + name + '_sol_' +
          deform_info + '_pore' + str(pore_flag) + '.xml') << generator.pde.u
 
     print('energy_list', energy)

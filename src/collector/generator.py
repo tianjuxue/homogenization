@@ -213,7 +213,7 @@ class Generator(object):
 
         return self.energy_density
 
-    def _anealing_solver_disp(self, return_all=False):
+    def _anealing_solver_disp(self, u_guess=None, return_all=False):
         self.args.c1, self.args.c2 = self.void_shape
 
         pore_type = 0 if np.sum(np.absolute(self.void_shape)) < 1e-3  else 2 
@@ -231,7 +231,10 @@ class Generator(object):
         if not os.path.isfile(mesh_name):
             fa.File(mesh_name) << pde.mesh
 
-        guess = fa.Function(pde.V).vector()
+        if u_guess is not None:
+            guess = u_guess.vector()
+        else:
+            guess = fa.Function(pde.V).vector()
 
         self.energy_density = []
         self.force = []
@@ -264,6 +267,7 @@ class Generator(object):
 
             u.rename('u', 'u')
             file << (u, i)
+            # fa.File('plots/new_data/sol/intermediate/size' + str(self.args.n_cells) + '_disp_' + '{:.5f}'.format(np.absolute(e22)) + '.xml') << u
 
         print("Total energy is", energy)
         self.pde = pde

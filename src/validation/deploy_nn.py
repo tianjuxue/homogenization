@@ -302,10 +302,10 @@ def run_and_save(factors, disp, pore_flag, name):
     np.save('plots/new_data/numpy/time/' + name + '_time_' + deform_info +
             '_pore' + str(pore_flag) + '.npy', np.asarray(time_elapsed))
 
-    File('plots/new_data/sol/post_processing/' + name + '_mesh_' +
-         deform_info + '_pore' + str(pore_flag) + '.xml') << mesh
-    File('plots/new_data/sol/post_processing/' + name + '_sol_' +
-         deform_info + '_pore' + str(pore_flag) + '.xml') << u
+    # File('plots/new_data/sol/post_processing/input/' + name + '_mesh_' +
+    #      deform_info + '_pore' + str(pore_flag) + '.xml') << mesh
+    # File('plots/new_data/sol/post_processing/input/' + name + '_sol_' +
+    #      deform_info + '_pore' + str(pore_flag) + '.xml') << u
 
     print('energy_list', energy_list)
     print('force_list', force_list)
@@ -324,7 +324,7 @@ def run():
 if __name__ == '__main__':
     args = arguments.args
     args.n_macro = 8
-    args.relaxation_parameter = 0.6
+    args.relaxation_parameter = 0.1
     args.max_newton_iter = 2000
     # set_log_level(20)
     run()
