@@ -200,12 +200,15 @@ def polynomial_regression(args):
     degrees = np.arange(1, 10, 1)
     train_MSE_tosave = []
     test_MSE_tosave = []
+    poly_degree = []
     for d in degrees:
         train_MSE, test_MSE =  trainer.polynomial_regression(d)
         train_MSE_tosave.append(train_MSE)
         test_MSE_tosave.append(test_MSE)
+        poly_degree.append(d)
     np.save('plots/new_data/numpy/polynomial/train_MSE.npy', np.asarray(train_MSE_tosave))
     np.save('plots/new_data/numpy/polynomial/test_MSE.npy', np.asarray(test_MSE_tosave))
+    np.save('plots/new_data/numpy/polynomial/poly_degree.npy', np.asarray(poly_degree))
 
 
 def training(args):
