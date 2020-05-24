@@ -154,8 +154,7 @@ def get_energy(u, pore_flag, network, V):
     else:
         xi_exp = XiExpression()
         xi = interpolate(xi_exp, V)
-        C_list = [C00, C01, C11, xi[0]]
-        # C_list = [C00, C01, C11, xi[0], xi[1]]
+        C_list = [C00, C01, C11, xi[0], xi[1]]
 
     # change to manual_nn for NN
     # change to manual_gpr for GPR
@@ -190,7 +189,7 @@ def homogenization(args, disp, pore_flag, file):
     mesh = RectangleMesh(Point(0, 0), Point(
         args.n_macro * args.L0, args.n_macro * args.L0), 8, 8, diagonal='crossed')
     # mesh = RectangleMesh(Point(0, 0), Point(
-    #     args.n_macro * args.L0, args.n_macro * args.L0), 10, 10)
+    #     args.n_macro * args.L0, args.n_macro * args.L0), 10, 10 )
 
     V = VectorFunctionSpace(mesh, "Lagrange", 1)
 
@@ -231,7 +230,7 @@ def homogenization(args, disp, pore_flag, file):
 
     initial_value = 0
     if disp < 0 and pore_flag == 2:
-        initial_value = 0.5
+        initial_value = 0.2
     initial_exp = KinkExpression(initial_value, disp)
     u = interpolate(initial_exp, V)
     energy, stress = get_energy(u, pore_flag, network, V)
@@ -253,8 +252,8 @@ def homogenization(args, disp, pore_flag, file):
           form_compiler_parameters=ffc_options,
           solver_parameters={'newton_solver': {'relaxation_parameter': args.relaxation_parameter,
                                                'maximum_iterations': args.max_newton_iter,
-                                               "relative_tolerance": 1e-4,
-                                               "absolute_tolerance": 1e-4}})
+                                               "relative_tolerance": 1e-1,
+                                               "absolute_tolerance": 1e-1}})
 
     energy_def = assemble(energy * dx)
 
@@ -273,9 +272,9 @@ def homogenization(args, disp, pore_flag, file):
     # print("Total force (relative) is", force_rel)
 
     # Save solution in VTK format
-    if disp < 0 and file is not None:
+    if disp < 0 and file is not None or True:
         u.rename('u', 'u')
-        file << (u, -disp)
+        file << (u, disp)
 
     return energy_rel, force_rel, u, mesh
 
@@ -295,17 +294,17 @@ def run_and_save(factors, disp, pore_flag, name):
     time_elapsed = end - start
 
     deform_info = 'com' if disp < 0 else 'ten'
-    np.save('plots/new_data/numpy/energy/' + name + '_energy_' + deform_info +
-            '_pore' + str(pore_flag) + '.npy', np.asarray(energy_list) / pow(args.n_macro * args.L0, 2))
-    np.save('plots/new_data/numpy/force/' + name + '_force_' + deform_info +
-            '_pore' + str(pore_flag) + '.npy', np.asarray(force_list))
-    np.save('plots/new_data/numpy/time/' + name + '_time_' + deform_info +
-            '_pore' + str(pore_flag) + '.npy', np.asarray(time_elapsed))
+    # np.save('plots/new_data/numpy/energy/' + name + '_energy_' + deform_info +
+    #         '_pore' + str(pore_flag) + '.npy', np.asarray(energy_list) / pow(args.n_macro * args.L0, 2))
+    # np.save('plots/new_data/numpy/force/' + name + '_force_' + deform_info +
+    #         '_pore' + str(pore_flag) + '.npy', np.asarray(force_list))
+    # np.save('plots/new_data/numpy/time/' + name + '_time_' + deform_info +
+    #         '_pore' + str(pore_flag) + '.npy', np.asarray(time_elapsed))
 
-    # File('plots/new_data/sol/post_processing/input/' + name + '_mesh_' +
-    #      deform_info + '_pore' + str(pore_flag) + '.xml') << mesh
-    # File('plots/new_data/sol/post_processing/input/' + name + '_sol_' +
-    #      deform_info + '_pore' + str(pore_flag) + '.xml') << u
+    File('plots/new_data/sol/post_processing/input/' + name + '_mesh_' +
+         deform_info + '_pore' + str(pore_flag) + '.xml') << mesh
+    File('plots/new_data/sol/post_processing/input/' + name + '_sol_' +
+         deform_info + '_pore' + str(pore_flag) + '.xml') << u
 
     print('energy_list', energy_list)
     print('force_list', force_list)
@@ -316,20 +315,20 @@ def run_and_save(factors, disp, pore_flag, name):
 def run():
     factors = np.linspace(0, 1, 11)
     run_and_save(factors, disp=-0.1, pore_flag=2, name='NN')
-    run_and_save(factors, disp=-0.1, pore_flag=0, name='NN')
-    run_and_save(factors, disp=0.1, pore_flag=2, name='NN')
-    run_and_save(factors, disp=0.1, pore_flag=0, name='NN')
+    # run_and_save(factors, disp=-0.1, pore_flag=0, name='NN')
+    # run_and_save(factors, disp=0.1, pore_flag=2, name='NN')
+    # run_and_save(factors, disp=0.1, pore_flag=0, name='NN')
 
 
 if __name__ == '__main__':
     args = arguments.args
-    args.n_macro = 8
+    args.n_macro = 16
     args.relaxation_parameter = 0.1
     args.max_newton_iter = 2000
     # set_log_level(20)
-    run()
+    # run()
     # energy, force, u, _ = homogenization(args, disp=-0.1, pore_flag=2, file=None)
-    # run_and_save(np.linspace(0, 1, 11), disp=-0.14, pore_flag=0, name='NN')
+    run_and_save(np.linspace(0, 1, 11), disp=0.1, pore_flag=3, name='NN')
 
     # # GPR related
     # params = np.load('plots/new_data/numpy/gpr/para.npz')

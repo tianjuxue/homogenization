@@ -7,33 +7,35 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 import time
 
+# 8x8
+# generator.anneal_factors = np.linspace(0.76, 1, 21)
 
-def run_and_save(size):
+def run_and_save(size, pore_flag):
     print('\nsize is', size)
     start = time.time()
-    generator = Generator(args)
-    # generator.args.relaxation_parameter = 0.2    
+    generator = Generator(args)   
     generator.args.relaxation_parameter = 0.2
     generator.args.max_newton_iter = 2000
-    generator.enable_fast_solve = False
     generator.args.n_cells = size
     generator.args.metamaterial_mesh_size = 15
     generator.args.fluctuation = False
     generator.args.padding = False
     # generator.anneal_factors = np.linspace(0.76, 1, 21)
-    generator.anneal_factors = np.linspace(0., 1, 21)
     generator.def_grad = np.array([0, 0, 0, -0.1])
-    generator.void_shape = np.array([-0.2, 0.2])
-    pore_type = 0 if np.sum(np.absolute(generator.void_shape)) < 1e-3  else 2 
+    generator.pore_flag = pore_flag
+ 
+    if pore_flag == 0:
+        generator.enable_fast_solve = True
+        generator.void_shape = np.array([-0., 0.])
+        generator.anneal_factors = np.concatenate((np.linspace(0, 0.75, 6), np.linspace(0.75, 1., 11)))
 
-    # mesh_name = 'plots/new_data/mesh/' + 'DNS' + '_size' + str(size) + '_pore' + str(2) + '.xml'
-    # if os.path.isfile(mesh_name):
-    #     mesh = fa.Mesh(mesh_name)
-    #     V = fa.VectorFunctionSpace(mesh, 'P', 1)
-    #     disp_sol = fa.Function(V, 'plots/new_data/sol/intermediate/size' + str(size) + '_disp_0.07600.xml')
-    #     print("load solution")
-    # else:
-    #     disp_sol = None
+        generator.anneal_factors = np.linspace(0.76, 1, 51)
+
+
+    else:
+        generator.enable_fast_solve = False
+        generator.void_shape = np.array([-0.2, 0.2])
+        generator.anneal_factors = np.linspace(0., 1, 21)
 
     energy_density, force, sols = generator._anealing_solver_disp(u_guess=None, return_all=True)
     end = time.time()
@@ -41,7 +43,7 @@ def run_and_save(size):
     t_mesh = generator.pde.time_elapsed
   
     force = np.asarray([f[1][1] for f in force]) / (args.n_cells * args.L0)
-    np.save('plots/new_data/numpy/size_effect/' + 'DNS_force_com_pore' + str(pore_type) + '_size' + str(size)  + '.npy', force)
+    np.save('plots/new_data/numpy/size_effect/' + 'DNS_force_com_pore' + str(pore_flag) + '_size' + str(size)  + '.npy', force)
 
     print('time elapsed: total', t_total)
     print('time elapsed on mesh', t_mesh)
@@ -49,11 +51,12 @@ def run_and_save(size):
 
 
 def simulate():
-    sizes = [32]
+    sizes = [21]
+    # sizes = [16]
     time_total = []
     time_mesh = []
     for size in sizes:
-        t_total, t_mesh = run_and_save(size)
+        t_total, t_mesh = run_and_save(size, 0)
         time_total.append(t_total)
         time_mesh.append(t_mesh)
 
@@ -63,6 +66,7 @@ def simulate():
     np.save('plots/new_data/numpy/size_effect/sizes.npy', np.asarray(sizes))
     np.save('plots/new_data/numpy/size_effect/time_total.npy', np.asarray(time_total))
     np.save('plots/new_data/numpy/size_effect/time_mesh.npy', np.asarray(time_mesh))
+
 
 def plot_results_time():
     sizes = np.load('plots/new_data/numpy/size_effect/sizes.npy')
@@ -82,16 +86,16 @@ def plot_results_force():
     fig = plt.figure(0)
     plt.tick_params(labelsize=14)
 
-    NN_force_com_pore0 = np.load('plots/new_data/numpy/force/NN_force_com_pore2.npy') 
+    NN_force_com_pore0 = np.load('plots/new_data/numpy/force/NN_force_com_pore0.npy') 
     plt.plot(np.linspace(0, -0.1, len(NN_force_com_pore0)), (NN_force_com_pore0 - NN_force_com_pore0[0]), '--', color='blue')
 
     sizes = np.load('plots/new_data/numpy/size_effect/sizes.npy')
-    sizes = [32]
-    colors = ['orange', 'blue', 'red', 'purple']
+    sizes = [8, 10, 12, 16]
+    colors = ['blue', 'orange', 'red', 'purple']
     for i, sz in enumerate(sizes):
-        DNS_force_com_pore0 = np.load('plots/new_data/numpy/size_effect/' + 'DNS_force_com_pore2_size' + str(sz)  + '.npy')
-        # plt.plot(np.linspace(0, -0.1, len(DNS_force_com_pore0)), (DNS_force_com_pore0 - DNS_force_com_pore0[0]), linestyle='--', marker='o', color=colors[i])
-        plt.plot(np.linspace(0, -0.1, len(DNS_force_com_pore0)), (DNS_force_com_pore0 - DNS_force_com_pore0[0]), linestyle='-', marker='o', color=colors[i])
+        DNS_force_com_pore0 = np.load('plots/new_data/numpy/size_effect/' + 'DNS_force_com_pore0_size' + str(sz)  + '.npy')
+        plt.plot(-0.1*np.concatenate((np.linspace(0, 0.75, 6), np.linspace(0.75, 1., 11))),
+            (DNS_force_com_pore0 - DNS_force_com_pore0[0]), linestyle='-', marker='o', color=colors[i])
 
 def plot_custom_force():
     DNS_force_com_pore0 = np.load('plots/new_data/numpy/size_effect/DNS_force_com_pore0_size4.npy') 
@@ -102,13 +106,13 @@ def plot_custom_force():
 
 
 def run():
-    # simulate()
+    simulate()
     # plot_results_time()
-    plot_results_force()
+    # plot_results_force()
     plt.show()
 
 
 if __name__ == '__main__':
     args = arguments.args
-    fa.set_log_level(20)
+    fa.set_log_level(30)
     run()

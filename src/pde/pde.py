@@ -121,5 +121,5 @@ class PDE(object):
             fa.solve(dE == 0, u, bcs, J=jacE,
                      form_compiler_parameters=ffc_options,
                      solver_parameters={'newton_solver': {'relaxation_parameter': self.args.relaxation_parameter,
-                                         'maximum_iterations': self.args.max_newton_iter}})
+                                         'maximum_iterations': self.args.max_newton_iter, 'linear_solver': 'lu'}})
         return u

@@ -38,7 +38,7 @@ def vis_outline(args, points_ref):
 
 def create_RVE_centers(args):
     dim = 2
-    N = 4
+    N = 8
     points_ref = np.empty([N, N, dim])
     for i in range(N):
         for j in range(N):
@@ -124,19 +124,39 @@ def run_single_paraview(args, points_ref, name, deform_info, pore_flag):
         else:
             u_avg.vector()[i] = uy
 
-    # file2 = fa.File('u_DNS.pvd')
-    # file2 << u_avg
-    # file1 = fa.File('disp_sol.pvd')
-    # file1 << disp_sol
-    file = fa.File('plots/new_data/sol/post_processing/output/' + name + '_size' + str(2*N) + '_' + 
+ 
+    file = fa.File('plots/new_data/sol/post_processing/output/avg_' + name + '_size' + str(2*N) + '_' + 
                    deform_info + '_pore' + str(pore_flag) + '.pvd')
+    u_avg.rename('u', 'u')
     file << u_avg
 
 def run_paraview_plot(args):
     points_ref = create_RVE_centers(args)
     run_single_paraview(args, points_ref, 'DNS', 'com', 0)
+    run_single_paraview(args, points_ref, 'DNS', 'com', 2)
+
+
+def run_single_recover(args, name, deform_info, pore_flag):
+    # DNS/NN + com/ten + pore0/pore2 + size16, solutions recover
+    mesh = fa.Mesh('plots/new_data/sol/post_processing/input/' + name + '_mesh_' +
+                   deform_info + '_pore' + str(pore_flag) + '.xml')
+    V = fa.VectorFunctionSpace(mesh, 'P', 1)
+    disp_sol = fa.Function(V, 'plots/new_data/sol/post_processing/input/' + name + '_sol_' +
+                           deform_info + '_pore' + str(pore_flag) + '.xml')
+    file = fa.File('plots/new_data/sol/post_processing/output/' + name + '_sol_' +
+                           deform_info + '_pore' + str(pore_flag) + '.pvd')
+    disp_sol.rename('u', 'u')
+    file << disp_sol
+
+
+def run_recover_pvd(args):
+    run_single_recover(args, 'DNS', 'com', 0)
+    run_single_recover(args, 'DNS', 'com', 2)
+    run_single_recover(args, 'NN', 'com', 0)
+    run_single_recover(args, 'NN', 'com', 2)
 
 
 if __name__ == '__main__':
     args = arguments.args
-    run_paraview_plot(args)
+    run_recover_pvd(args)
+    # run_paraview_plot(args)

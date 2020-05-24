@@ -32,20 +32,19 @@ class Metamaterial(PDE):
         material_domain = None
         pore_domain = None
 
-        r0 = L0 * math.sqrt(2 * porosity) / math.sqrt(math.pi *
-                                                      (2 + c1**2 + c2**2))
-
-        def coords_fn(theta):
-            return r0 * (1 + c1 * fa.cos(4 * theta) + c2 * fa.cos(8 * theta))
-
-        base_pore_points, radii, thetas = build_base_pore(
-                    coords_fn, pore_radial_resolution)
-
         for i in range(n_cells):
             for j in range(n_cells):
                 if args.gradient:
                     c1 = (j + 0.5) / n_cells * -0.2
                     c2 = (j + 0.5) / n_cells * 0.2
+
+                r0 = L0 * math.sqrt(2 * porosity) / math.sqrt(math.pi *
+                                                              (2 + c1**2 + c2**2))
+                def coords_fn(theta):
+                    return r0 * (1 + c1 * fa.cos(4 * theta) + c2 * fa.cos(8 * theta))
+
+                base_pore_points, radii, thetas = build_base_pore(
+                            coords_fn, pore_radial_resolution)
 
                 pore = build_pore_polygon(
                     base_pore_points, offset=(L0 * (i + 0.5), L0 * (j + 0.5)))
@@ -61,6 +60,11 @@ class Metamaterial(PDE):
 
         if args.padding:
             for j in range(n_cells):
+                # TODO (Tianju): Likely to have a bug here, but should be easy to fix
+                # Given padding is not important anyway, I will leave it here
+                base_pore_points, radii, thetas = build_base_pore(
+                            coords_fn, pore_radial_resolution)
+
                 pore = build_pore_polygon(
                     base_pore_points, offset=(L0 * (-0.5), L0 * (j + 0.5)))
                 cell = mshr.Rectangle(

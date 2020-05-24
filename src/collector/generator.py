@@ -122,15 +122,14 @@ class Generator(object):
 
     def _anealing_solver_fluctuation(self, return_force=False):
         self.args.c1, self.args.c2 = self.void_shape
-
-        pore_type = 0 if np.sum(np.absolute(self.void_shape)) < 1e-3  else 2 
-        mesh_name = 'plots/new_data/mesh/RVE_' + str(self.args.n_cells) + '_pore' + str(pore_type) + '.xml'
+        pore_flag = 0 if np.sum(np.absolute(self.void_shape)) < 1e-3  else 2
+        mesh_name = 'plots/new_data/mesh/RVE_' + str(self.args.n_cells) + '_pore' + str(pore_flag) + '.xml'
         if os.path.isfile(mesh_name):
             mesh = fa.Mesh(mesh_name)
         else:
             mesh = None
 
-        if pore_type is 0:
+        if pore_flag is 0:
             guide = True
         else:
             guide = False
@@ -201,7 +200,7 @@ class Generator(object):
                                   e11=e11, e12=e12, e21=e21, e22=e22, degree=2)
         result = fa.project(affine_fn + u, pde.V_non_periodic)
 
-        file = fa.File("tmp/u.pvd")
+        file = fa.File("tmp/RVE_pore" + str(pore_flag) + "/u.pvd")
         result.rename('u', 'u')
         file << result
         self.pde = pde
@@ -215,17 +214,17 @@ class Generator(object):
 
     def _anealing_solver_disp(self, u_guess=None, return_all=False):
         self.args.c1, self.args.c2 = self.void_shape
-
-        pore_type = 0 if np.sum(np.absolute(self.void_shape)) < 1e-3  else 2 
         if self.args.padding:
-            mesh_name = 'plots/new_data/mesh/DNS_padding_size' + str(self.args.n_cells) + '_pore' + str(pore_type) + '.xml'
+            mesh_name = 'plots/new_data/mesh/DNS_padding_size' + str(self.args.n_cells) + '_pore' + str(self.pore_flag) + '.xml'
         else:
-            mesh_name = 'plots/new_data/mesh/DNS_size' + str(self.args.n_cells) + '_pore' + str(pore_type) + '.xml'
+            mesh_name = 'plots/new_data/mesh/DNS_size' + str(self.args.n_cells) + '_pore' + str(self.pore_flag) + '.xml'
             
         if os.path.isfile(mesh_name):
             mesh = fa.Mesh(mesh_name)
         else:
             mesh = None
+
+        # mesh = fa.Mesh('plots/new_data/mesh/DNS_noise_size8_pore0_mao.xml')
 
         pde = Metamaterial(self.args, mesh)
         if not os.path.isfile(mesh_name):
@@ -240,7 +239,7 @@ class Generator(object):
         self.force = []
         self.sols = []
 
-        file = fa.File("tmp/u.pvd")
+        file = fa.File("tmp/DNS_pore" + str(self.pore_flag) + '_size' + str(self.args.n_cells) + "/u.pvd")
         for i, factor in enumerate(self.anneal_factors):
             print("   Now at step", i)
             e11, e12, e21, e22 = factor * self.def_grad
@@ -267,7 +266,7 @@ class Generator(object):
 
             u.rename('u', 'u')
             file << (u, i)
-            # fa.File('plots/new_data/sol/intermediate/size' + str(self.args.n_cells) + '_disp_' + '{:.5f}'.format(np.absolute(e22)) + '.xml') << u
+            fa.File('plots/new_data/sol/intermediate/size' + str(self.args.n_cells) + '_disp_' + '{:.5f}'.format(np.absolute(e22)) + '.xml') << u
 
         print("Total energy is", energy)
         self.pde = pde

@@ -101,5 +101,12 @@ plt.plot(np.linspace(0, -0.1, len(DNS_force_com_pore0)), (DNS_force_com_pore0 - 
 DNS_force_com_pore0 = np.load('plots/new_data/numpy/size_effect/' + 'DNS_force_com_pore0_size' + str(8)  + '_bad.npy')
 plt.plot(np.linspace(0, -0.1, len(DNS_force_com_pore0)), (DNS_force_com_pore0 - DNS_force_com_pore0[0]), linestyle='--', marker='o', color='red')
 
-
+mesh_name = 'plots/new_data/mesh/' + 'DNS' + '_size' + str(size) + '_pore' + str(2) + '.xml'
+if os.path.isfile(mesh_name):
+    mesh = fa.Mesh(mesh_name)
+    V = fa.VectorFunctionSpace(mesh, 'P', 1)
+    disp_sol = fa.Function(V, 'plots/new_data/sol/intermediate/size' + str(size) + '_disp_0.07600.xml')
+    print("load solution")
+else:
+    disp_sol = None
 

@@ -7,6 +7,7 @@ if __name__ == '__main__':
 
     path_prefix_energy = 'plots/new_data/numpy/energy/'
     path_prefix_force = 'plots/new_data/numpy/force/'
+    path_prefix_time = 'plots/new_data/numpy/time/'
 
     DNS_energy_com_pore0 = np.load(path_prefix_energy + 'DNS_energy_com_pore0.npy') # 309.06
     DNS_energy_ten_pore0 = np.load(path_prefix_energy + 'DNS_energy_ten_pore0.npy') # 315.3
@@ -33,7 +34,7 @@ if __name__ == '__main__':
 
     fig = plt.figure(0)
     plt.tick_params(labelsize=14)
-    plt.plot(np.linspace(0,  -0.1, len(DNS_energy_com_pore0)), (DNS_energy_com_pore0 - DNS_energy_com_pore0[0]), '-', color='blue', label='DNS ' + r'$\xi_a$')
+    plt.plot(-0.1*np.concatenate((np.linspace(0, 0.7, 3), np.linspace(0.7, 1., 11))), (DNS_energy_com_pore0 - DNS_energy_com_pore0[0]), '-', color='blue', label='DNS ' + r'$\xi_a$')
     plt.plot(np.linspace(0,  0.1, len(DNS_energy_ten_pore0)), (DNS_energy_ten_pore0 - DNS_energy_ten_pore0[0]), '-', color='blue', label='DNS ' + r'$\xi_a$')
     plt.plot(np.linspace(0,  -0.1, len(NN_energy_com_pore0)), (NN_energy_com_pore0 - NN_energy_com_pore0[0]), '--', color='blue', label='NN ' + r'$\xi_a$')
     plt.plot(np.linspace(0,  0.1, len(NN_energy_ten_pore0)), (NN_energy_ten_pore0 - NN_energy_ten_pore0[0]), '--', color='blue', label='NN ' + r'$\xi_a$')
@@ -44,7 +45,7 @@ if __name__ == '__main__':
 
     fig = plt.figure(1)
     plt.tick_params(labelsize=14)
-    plt.plot(np.linspace(0,  -0.1, len(DNS_force_com_pore0)), (DNS_force_com_pore0 - DNS_force_com_pore0[0]), '-', color='blue', label='DNS ' + r'$\xi_a$')
+    plt.plot(-0.1*np.concatenate((np.linspace(0, 0.7, 3), np.linspace(0.7, 1., 11))), (DNS_force_com_pore0 - DNS_force_com_pore0[0]), '-', color='blue', label='DNS ' + r'$\xi_a$')
     plt.plot(np.linspace(0,  0.1, len(DNS_force_ten_pore0)), (DNS_force_ten_pore0 - DNS_force_ten_pore0[0]), '-', color='blue', label='DNS ' + r'$\xi_a$')
     plt.plot(np.linspace(0,  -0.1, len(NN_force_com_pore0)), (NN_force_com_pore0 - NN_force_com_pore0[0]), '--', color='blue', label='NN ' + r'$\xi_a$')
     plt.plot(np.linspace(0,  0.1, len(NN_force_ten_pore0)), (NN_force_ten_pore0 - NN_force_ten_pore0[0]), '--', color='blue', label='NN ' + r'$\xi_a$')
@@ -54,30 +55,18 @@ if __name__ == '__main__':
     plt.plot(np.linspace(0,  0.1, len(NN_force_ten_pore2)), (NN_force_ten_pore2 - NN_force_ten_pore2[0]), '--', color='red', label='NN ' + r'$\xi_b$')
 
 
+    print(np.load(path_prefix_time + 'DNS_time_com_pore0.npy'))
+    print(np.load(path_prefix_time + 'DNS_time_com_pore2.npy'))
+    print(np.load(path_prefix_time + 'DNS_time_ten_pore0.npy'))
+    print(np.load(path_prefix_time + 'DNS_time_ten_pore2.npy'))
+    print(np.load(path_prefix_time + 'NN_time_com_pore0.npy'))
+    print(np.load(path_prefix_time + 'NN_time_com_pore2.npy'))
+    print(np.load(path_prefix_time + 'NN_time_ten_pore0.npy'))
+    print(np.load(path_prefix_time + 'NN_time_ten_pore2.npy'))
 
-    # fig = plt.figure(0)
-    # plt.tick_params(labelsize=14)
-    # plt.plot(strain_com, DNS_energy_com_pore0, '-', color='blue', label='DNS ' + r'$\xi_a$')
-    # plt.plot(strain_ten, DNS_energy_ten_pore0, '-', color='blue', label='DNS ' + r'$\xi_a$')
-    # plt.plot(strain_com, NN_energy_com_pore0, '--', color='blue', label='NN ' + r'$\xi_a$')
-    # plt.plot(strain_ten, NN_energy_ten_pore0, '--', color='blue', label='NN ' + r'$\xi_a$')
-    # plt.plot(strain_com, DNS_energy_com_pore2, '-', color='red', label='DNS ' + r'$\xi_b$')
-    # plt.plot(strain_ten, DNS_energy_ten_pore2, '-', color='red', label='DNS ' + r'$\xi_b$')
-    # plt.plot(strain_com, NN_energy_com_pore2, '--', color='red', label='NN ' + r'$\xi_b$')
-    # plt.plot(strain_ten, NN_energy_ten_pore2 , '--', color='red', label='NN ' + r'$\xi_b$')
-
-    # fig = plt.figure(1)
-    # plt.tick_params(labelsize=14)
-    # plt.plot(strain_com, DNS_force_com_pore0, '-', color='blue', label='DNS ' + r'$\xi_a$')
-    # plt.plot(strain_ten, DNS_force_ten_pore0, '-', color='blue', label='DNS ' + r'$\xi_a$')
-    # plt.plot(strain_com, NN_force_com_pore0, '--', color='blue', label='NN ' + r'$\xi_a$')
-    # plt.plot(strain_ten, NN_force_ten_pore0, '--', color='blue', label='NN ' + r'$\xi_a$')
-    # plt.plot(strain_com, DNS_force_com_pore2, '-', color='red', label='DNS ' + r'$\xi_b$')
-    # plt.plot(strain_ten, DNS_force_ten_pore2, '-', color='red', label='DNS ' + r'$\xi_b$')
-    # plt.plot(strain_com, NN_force_com_pore2, '--', color='red', label='NN ' + r'$\xi_b$')
-    # plt.plot(strain_ten, NN_force_ten_pore2, '--', color='red', label='NN ' + r'$\xi_b$')
-
-
-
+    print(NN_force_com_pore0)
+    print(NN_force_ten_pore0)
+    print(NN_force_com_pore2)
+    print(NN_force_ten_pore2)
 
     plt.show()

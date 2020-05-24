@@ -101,6 +101,9 @@ class Trainer(object):
         print("Polynomial regression degree {} training MSE {}, test MSE {}\n".format(
             degree, train_MSE, test_MSE))
 
+        return train_MSE, test_MSE
+
+
     def train(self, k, hidden_dim, lr, bsize):
         self.args.hidden_dim = hidden_dim
         self.args.lr = lr
@@ -195,8 +198,14 @@ def polynomial_regression(args):
     Xin, Xout = load_data_all(args, rm_dup=False, middle=False)
     trainer = Trainer(args, Xin, Xout)
     degrees = np.arange(1, 10, 1)
+    train_MSE_tosave = []
+    test_MSE_tosave = []
     for d in degrees:
-        trainer.polynomial_regression(d)
+        train_MSE, test_MSE =  trainer.polynomial_regression(d)
+        train_MSE_tosave.append(train_MSE)
+        test_MSE_tosave.append(test_MSE)
+    np.save('plots/new_data/numpy/polynomial/train_MSE.npy', np.asarray(train_MSE_tosave))
+    np.save('plots/new_data/numpy/polynomial/test_MSE.npy', np.asarray(test_MSE_tosave))
 
 
 def training(args):
@@ -210,5 +219,5 @@ if __name__ == '__main__':
     args = arguments.args
     MODEL_PATH = args.checkpoints_path
     # hyper_tuning(args)
-    training(args)
-    # polynomial_regression(args)
+    # training(args)
+    polynomial_regression(args)
