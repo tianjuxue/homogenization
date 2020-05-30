@@ -110,3 +110,10 @@ if os.path.isfile(mesh_name):
 else:
     disp_sol = None
 
+
+# Remarks:
+# size8
+# generator.anneal_factors = np.linspace(0.76, 1, 21)
+
+# size21 pore0
+# generator.anneal_factors = np.concatenate((np.linspace(0, 0.75, 6), np.linspace(0.75, 1., 11)))

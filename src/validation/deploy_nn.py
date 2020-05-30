@@ -7,7 +7,7 @@ import time
 import numpy as np
 import matplotlib.pyplot as plt
 import scipy.optimize as opt
-from ..trainer.loader import Net
+from ..trainer.loader_pytorch import Net
 from .. import arguments
 
 
@@ -72,8 +72,6 @@ def sigmoid(x):
 
 
 def layer(x, weights, bias, id):
-    weights = weights.data.numpy()
-    bias = bias.data.numpy()
     input_size = weights.shape[1]
     output_size = weights.shape[0]
     output = []
@@ -93,10 +91,12 @@ def layer(x, weights, bias, id):
 
 
 def manual_nn(network, x):
-    x1 = layer(x, network.fc1.weight, network.fc1.bias, 1)
-    x2 = layer(x1, network.fc2.weight, network.fc2.bias, 2)
+    coefs, intercepts = network
+    x1 = layer(x, coefs[0], intercepts[0], 1)
+    x2 = layer(x1, coefs[1], intercepts[1], 2)
     assert (len(x2) == 1)
     return x2[0]
+
 
 def manual_gpr(network, C_list):
     result0 = 0
@@ -173,10 +173,18 @@ def homogenization(args, disp, pore_flag, file):
         disp, pore_flag))
     # new_universal for numerical vals, normal fig
     # shear for shear fig
-    # model_path = args.checkpoints_path + '/model_step_1000'
-    model_path = 'saved_checkpoints_tmp/new_universal'
-    network = torch.load(model_path)
+    model_path = args.checkpoints_path + '/model_step_1000'
+    # model_path = 'saved_checkpoints_tmp/new_universal'
+    model = torch.load(model_path)
+    coefs = [model.fc1.weight.data.numpy(), model.fc2.weight.data.numpy()]
+    intercepts = [model.fc1.bias.data.numpy(), model.fc2.bias.data.numpy()]
 
+    coefs = np.load('saved_weights/coefs.npy')
+    intercepts =  np.load('saved_weights/intercepts.npy')
+    coefs[0] = np.transpose(coefs[0])
+    coefs[1] = np.transpose(coefs[1])
+
+    network = [coefs, intercepts]
     parameters["form_compiler"]["cpp_optimize"] = True
     ffc_options = {
         "optimize": True,
@@ -229,8 +237,8 @@ def homogenization(args, disp, pore_flag, file):
     # print("Total force (reference) is", force_ref)
 
     initial_value = 0
-    if disp < 0 and pore_flag == 2:
-        initial_value = 0.2
+    if disp < -0.04 and pore_flag == 2:
+        initial_value = 0.3
     initial_exp = KinkExpression(initial_value, disp)
     u = interpolate(initial_exp, V)
     energy, stress = get_energy(u, pore_flag, network, V)
@@ -283,8 +291,7 @@ def run_and_save(factors, disp, pore_flag, name):
     start = time.time()
     energy_list = []
     force_list = []
-    # u, mesh
-    file = File('tmp/u_nn_pore{}_.pvd'.format(pore_flag))
+    file = File('tmp/NN_pore{}/u.pvd'.format(pore_flag))
     for factor in factors:
         energy, force, u, mesh = homogenization(args, disp * factor, pore_flag, file)
         energy_list.append(energy)
@@ -294,17 +301,17 @@ def run_and_save(factors, disp, pore_flag, name):
     time_elapsed = end - start
 
     deform_info = 'com' if disp < 0 else 'ten'
-    # np.save('plots/new_data/numpy/energy/' + name + '_energy_' + deform_info +
-    #         '_pore' + str(pore_flag) + '.npy', np.asarray(energy_list) / pow(args.n_macro * args.L0, 2))
-    # np.save('plots/new_data/numpy/force/' + name + '_force_' + deform_info +
-    #         '_pore' + str(pore_flag) + '.npy', np.asarray(force_list))
-    # np.save('plots/new_data/numpy/time/' + name + '_time_' + deform_info +
-    #         '_pore' + str(pore_flag) + '.npy', np.asarray(time_elapsed))
+    np.save('plots/new_data/numpy/energy/' + name + '_energy_' + deform_info +
+            '_pore' + str(pore_flag) + '.npy', np.asarray(energy_list) / pow(args.n_macro * args.L0, 2))
+    np.save('plots/new_data/numpy/force/' + name + '_force_' + deform_info +
+            '_pore' + str(pore_flag) + '.npy', np.asarray(force_list))
+    np.save('plots/new_data/numpy/time/' + name + '_time_' + deform_info +
+            '_pore' + str(pore_flag) + '.npy', np.asarray(time_elapsed))
 
-    File('plots/new_data/sol/post_processing/input/' + name + '_mesh_' +
-         deform_info + '_pore' + str(pore_flag) + '.xml') << mesh
-    File('plots/new_data/sol/post_processing/input/' + name + '_sol_' +
-         deform_info + '_pore' + str(pore_flag) + '.xml') << u
+    # File('plots/new_data/sol/post_processing/input/' + name + '_mesh_' +
+    #      deform_info + '_pore' + str(pore_flag) + '.xml') << mesh
+    # File('plots/new_data/sol/post_processing/input/' + name + '_sol_' +
+    #      deform_info + '_pore' + str(pore_flag) + '.xml') << u
 
     print('energy_list', energy_list)
     print('force_list', force_list)
@@ -326,9 +333,11 @@ if __name__ == '__main__':
     args.relaxation_parameter = 0.1
     args.max_newton_iter = 2000
     # set_log_level(20)
-    # run()
+    run()
     # energy, force, u, _ = homogenization(args, disp=-0.1, pore_flag=2, file=None)
-    run_and_save(np.linspace(0, 1, 11), disp=0.1, pore_flag=3, name='NN')
+    # run_and_save(np.linspace(0, 1, 11), disp=0.1, pore_flag=3, name='NN')
+
+    # save_weights()
 
     # # GPR related
     # params = np.load('plots/new_data/numpy/gpr/para.npz')

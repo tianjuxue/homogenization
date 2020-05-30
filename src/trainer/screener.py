@@ -27,8 +27,8 @@ def load_data_all(args, rm_dup=False, middle=False):
     # DATA_PATH_middle = 'saved_data_pore1'
     # DATA_PATH_shear = 'saved_data_pore2'
 
-    # DATA_PATH_normal = 'saved_data_pore0_sobol_dr'
-    # DATA_PATH_shear = 'saved_data_pore2_sobol_dr'
+    DATA_PATH_normal = 'saved_data_pore0_sobol_dr'
+    DATA_PATH_shear = 'saved_data_pore2_sobol_dr'
 
     Xin_shear, Xout_shear = load_data_single(DATA_PATH_shear, rm_dup)
     Xin_normal, Xout_normal = load_data_single(DATA_PATH_normal, rm_dup)
@@ -44,6 +44,9 @@ def load_data_all(args, rm_dup=False, middle=False):
     args.input_dim = Xin.shape[1]
 
     print("\nTotal number of samples:", len(Xin))
+
+    np.save('saved_data_sobol/Xin.npy', Xin)
+    np.save('saved_data_sobol/Xout.npy', Xout)
 
     return Xin, Xout
 

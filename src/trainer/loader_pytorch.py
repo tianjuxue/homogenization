@@ -49,10 +49,10 @@ class Linear(nn.Module):
 class Trainer(object):
 
     def __init__(self, args, Xin, Xout):
-        super(Trainer, self).__init__()
         self.args = args
         self.Xin = Xin
         self.Xout = Xout
+        self.args.input_dim = Xin.shape[1]
         self.shuffle_data()
 
     def shuffle_data(self, K=5, test_ratio=0.1):
@@ -81,11 +81,13 @@ class Trainer(object):
         poly = PolynomialFeatures(degree)
         Xin_training = poly.fit_transform(Xin_training)
         Xin_test = poly.fit_transform(Xin_test)
-        Xin_training = np.concatenate((Xin_training, category_training), axis=1)
+        Xin_training = np.concatenate(
+            (Xin_training, category_training), axis=1)
         Xin_test = np.concatenate((Xin_test, category_test), axis=1)
 
         print(np.linalg.matrix_rank(Xin_training))
-        print(np.linalg.matrix_rank(np.matmul(Xin_training.transpose(), Xin_training)))
+        print(np.linalg.matrix_rank(
+            np.matmul(Xin_training.transpose(), Xin_training)))
         print(Xin_training.shape[1])
 
         # Analytical form
@@ -102,7 +104,6 @@ class Trainer(object):
             degree, train_MSE, test_MSE))
 
         return train_MSE, test_MSE
-
 
     def train(self, k, hidden_dim, lr, bsize):
         self.args.hidden_dim = hidden_dim
@@ -151,7 +152,8 @@ class Trainer(object):
                 print('\nepoch:', ep_num + 1)
                 print("MSE for training", compute_MSE(model, Xin_t, Xout_t),
                       "MSE for validation", compute_MSE(model, Xin_v, Xout_v))
-                torch.save(model, MODEL_PATH + '/model_step_' + str(ep_num + 1))
+                torch.save(model, MODEL_PATH +
+                           '/model_step_' + str(ep_num + 1))
 
         # print('\n\n')
         # print("MSE for training", compute_MSE(model, Xin_t, Xout_t))
@@ -202,25 +204,39 @@ def polynomial_regression(args):
     test_MSE_tosave = []
     poly_degree = []
     for d in degrees:
-        train_MSE, test_MSE =  trainer.polynomial_regression(d)
+        train_MSE, test_MSE = trainer.polynomial_regression(d)
         train_MSE_tosave.append(train_MSE)
         test_MSE_tosave.append(test_MSE)
         poly_degree.append(d)
-    np.save('plots/new_data/numpy/polynomial/train_MSE.npy', np.asarray(train_MSE_tosave))
-    np.save('plots/new_data/numpy/polynomial/test_MSE.npy', np.asarray(test_MSE_tosave))
-    np.save('plots/new_data/numpy/polynomial/poly_degree.npy', np.asarray(poly_degree))
+    np.save('plots/new_data/numpy/polynomial/train_MSE.npy',
+            np.asarray(train_MSE_tosave))
+    np.save('plots/new_data/numpy/polynomial/test_MSE.npy',
+            np.asarray(test_MSE_tosave))
+    np.save('plots/new_data/numpy/polynomial/poly_degree.npy',
+            np.asarray(poly_degree))
 
 
 def training(args):
-    Xin, Xout = load_data_all(args, rm_dup=False, middle=False)
+    # Xin, Xout = load_data_all(args, rm_dup=False, middle=False)
+    Xin = np.load('saved_data_sobol/Xin.npy')
+    Xout = np.load('saved_data_sobol/Xout.npy')
     trainer = Trainer(args, Xin, Xout)
     trainer.shuffle_data(K=10, test_ratio=0.)
     error = trainer.train(k=1, hidden_dim=256, lr=1e-2, bsize=32)
+
+
+def to_delete():
+    Xin, Xout = load_data_all(args, rm_dup=False, middle=False)
+    print(Xin.shape)
+    print(Xout.shape)
+    np.save('Xin.npy', Xin)
+    np.save('Xout.npy', Xout)
+    print(Xin)
 
 
 if __name__ == '__main__':
     args = arguments.args
     MODEL_PATH = args.checkpoints_path
     # hyper_tuning(args)
-    # training(args)
-    polynomial_regression(args)
+    training(args)
+    # polynomial_regression(args)

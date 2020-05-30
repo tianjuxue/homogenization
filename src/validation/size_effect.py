@@ -7,8 +7,6 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 import time
 
-# 8x8
-# generator.anneal_factors = np.linspace(0.76, 1, 21)
 
 def run_and_save(size, pore_flag):
     print('\nsize is', size)
@@ -21,16 +19,14 @@ def run_and_save(size, pore_flag):
     generator.args.fluctuation = False
     generator.args.padding = False
     # generator.anneal_factors = np.linspace(0.76, 1, 21)
-    generator.def_grad = np.array([0, 0, 0, -0.1])
+    generator.def_grad = np.array([0, 0, 0, -0.125])
     generator.pore_flag = pore_flag
  
     if pore_flag == 0:
         generator.enable_fast_solve = True
         generator.void_shape = np.array([-0., 0.])
-        generator.anneal_factors = np.concatenate((np.linspace(0, 0.75, 6), np.linspace(0.75, 1., 11)))
-
-        generator.anneal_factors = np.linspace(0.76, 1, 51)
-
+        # generator.anneal_factors = np.concatenate((np.linspace(0, 0.75, 6), np.linspace(0.75, 1., 11)))
+        generator.anneal_factors = np.concatenate((np.linspace(0, 0.6, 6), np.linspace(0.6, 1., 21)))
 
     else:
         generator.enable_fast_solve = False
@@ -51,8 +47,8 @@ def run_and_save(size, pore_flag):
 
 
 def simulate():
-    sizes = [21]
-    # sizes = [16]
+    # sizes = [21]
+    sizes = [16]
     time_total = []
     time_mesh = []
     for size in sizes:
