@@ -45,8 +45,8 @@ def load_data_all(args, rm_dup=False, middle=False):
 
     print("\nTotal number of samples:", len(Xin))
 
-    np.save('saved_data_sobol/Xin.npy', Xin)
-    np.save('saved_data_sobol/Xout.npy', Xout)
+    np.save('saved_data_sobol/Xin_H.npy', Xin)
+    np.save('saved_data_sobol/Xout_H.npy', Xout)
 
     return Xin, Xout
 

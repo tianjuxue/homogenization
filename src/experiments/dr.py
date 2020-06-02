@@ -22,13 +22,13 @@ def simulate_periodic(args):
 
 def simulate_full(args):
     args.fluctuation = False
-    anneal_factors = np.linspace(0, 1, 31)
+    anneal_factors = np.linspace(0, 1, 21)
     parameters = [0., 0., -0., -0.1, -0., 0.]
     def_grad = np.array(parameters[0:4])
     void_shape = np.array(parameters[4:6])
     energy_density, force = solver_disp(args, void_shape, anneal_factors, def_grad, return_force=True)
     force = np.asarray([f[1][1] for f in force]) / (args.n_cells * args.L0)
-    np.save('plots/new_data/numpy/size_effect/DNS_force_com_pore0_size' + str(args.n_cells) + '_dr.npy', force)
+    # np.save('plots/new_data/numpy/size_effect/DNS_force_com_pore0_size' + str(args.n_cells) + '_dr.npy', force)
 
 
 def solver_disp(args, void_shape, anneal_factors, def_grad, return_force=False):
@@ -38,6 +38,7 @@ def solver_disp(args, void_shape, anneal_factors, def_grad, return_force=False):
     energy_density = []
     force = []
     pde.args.F_list = None
+    file = fa.File("tmp/dr/u.pvd")
     for i, factor in enumerate(anneal_factors):
         print("   Now at step", i)
         e11, e12, e21, e22 = factor * def_grad
@@ -59,7 +60,6 @@ def solver_disp(args, void_shape, anneal_factors, def_grad, return_force=False):
         energy_density.append(
             energy / pow(args.n_cells * args.L0, 2))
 
-        file = fa.File("/tmp/u.pvd")
         u.rename('u', 'u')
         file << (u, i)
 

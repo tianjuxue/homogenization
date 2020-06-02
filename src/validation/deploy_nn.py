@@ -52,6 +52,8 @@ class KinkExpression(UserExpression):
 
         values[1] = x[1] * self.disp
 
+        values[0] *= self.disp / -0.1
+
     def value_shape(self):
         return (2, )
 
@@ -156,6 +158,11 @@ def get_energy(u, pore_flag, network, V):
         xi = interpolate(xi_exp, V)
         C_list = [C00, C01, C11, xi[0], xi[1]]
 
+    shift = np.load('saved_weights/mean.npy')
+    shift = np.append(shift, 0)
+    for i in range(len(C_list)):
+        C_list[i] -= shift[i]
+
     # change to manual_nn for NN
     # change to manual_gpr for GPR
     energy = manual_nn(network, C_list)
@@ -237,8 +244,8 @@ def homogenization(args, disp, pore_flag, file):
     # print("Total force (reference) is", force_ref)
 
     initial_value = 0
-    if disp < -0.04 and pore_flag == 2:
-        initial_value = 0.3
+    if disp < -0 and pore_flag == 2:
+        initial_value = 0.25
     initial_exp = KinkExpression(initial_value, disp)
     u = interpolate(initial_exp, V)
     energy, stress = get_energy(u, pore_flag, network, V)
@@ -260,8 +267,8 @@ def homogenization(args, disp, pore_flag, file):
           form_compiler_parameters=ffc_options,
           solver_parameters={'newton_solver': {'relaxation_parameter': args.relaxation_parameter,
                                                'maximum_iterations': args.max_newton_iter,
-                                               "relative_tolerance": 1e-1,
-                                               "absolute_tolerance": 1e-1}})
+                                               "relative_tolerance": 1e-8,
+                                               "absolute_tolerance": 1e-8}})
 
     energy_def = assemble(energy * dx)
 
@@ -322,7 +329,7 @@ def run_and_save(factors, disp, pore_flag, name):
 def run():
     factors = np.linspace(0, 1, 11)
     run_and_save(factors, disp=-0.1, pore_flag=2, name='NN')
-    # run_and_save(factors, disp=-0.1, pore_flag=0, name='NN')
+    run_and_save(factors, disp=-0.1, pore_flag=0, name='NN')
     # run_and_save(factors, disp=0.1, pore_flag=2, name='NN')
     # run_and_save(factors, disp=0.1, pore_flag=0, name='NN')
 
@@ -334,8 +341,7 @@ if __name__ == '__main__':
     args.max_newton_iter = 2000
     # set_log_level(20)
     run()
-    # energy, force, u, _ = homogenization(args, disp=-0.1, pore_flag=2, file=None)
-    # run_and_save(np.linspace(0, 1, 11), disp=0.1, pore_flag=3, name='NN')
+    # run_and_save(np.linspace(0, 1, 11), disp=-0.1, pore_flag=3, name='NN')
 
     # save_weights()
 
