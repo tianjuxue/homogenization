@@ -12,22 +12,21 @@ def run_and_save(size, pore_flag):
     print('\nsize is', size)
     start = time.time()
     generator = Generator(args)   
-    generator.args.relaxation_parameter = 0.2
+    generator.args.relaxation_parameter = 0.6
     generator.args.max_newton_iter = 2000
     generator.args.n_cells = size
     generator.args.metamaterial_mesh_size = 15
     generator.args.fluctuation = False
     generator.args.padding = False
     # generator.anneal_factors = np.linspace(0.76, 1, 21)
-    generator.def_grad = np.array([0, 0, 0, -0.125])
+    generator.def_grad = np.array([0, 0, 0, -0.1])
     generator.pore_flag = pore_flag
  
     if pore_flag == 0:
         generator.enable_fast_solve = True
         generator.void_shape = np.array([-0., 0.])
-        # generator.anneal_factors = np.concatenate((np.linspace(0, 0.75, 6), np.linspace(0.75, 1., 11)))
-        generator.anneal_factors = np.concatenate((np.linspace(0, 0.6, 6), np.linspace(0.6, 1., 21)))
-
+        generator.anneal_factors = np.concatenate((np.linspace(0, 0.75, 6), np.linspace(0.75, 1., 11)))
+        # generator.anneal_factors = np.concatenate((np.linspace(0, 0.76, 1), np.linspace(0.76, 1., 51)))
     else:
         generator.enable_fast_solve = False
         generator.void_shape = np.array([-0.2, 0.2])
@@ -86,7 +85,7 @@ def plot_results_force():
     plt.plot(np.linspace(0, -0.1, len(NN_force_com_pore0)), (NN_force_com_pore0 - NN_force_com_pore0[0]), '--', color='blue')
 
     sizes = np.load('plots/new_data/numpy/size_effect/sizes.npy')
-    sizes = [8, 10, 12, 16]
+    sizes = [16]
     colors = ['blue', 'orange', 'red', 'purple']
     for i, sz in enumerate(sizes):
         DNS_force_com_pore0 = np.load('plots/new_data/numpy/size_effect/' + 'DNS_force_com_pore0_size' + str(sz)  + '.npy')
@@ -102,9 +101,9 @@ def plot_custom_force():
 
 
 def run():
-    simulate()
+    # simulate()
     # plot_results_time()
-    # plot_results_force()
+    plot_results_force()
     plt.show()
 
 

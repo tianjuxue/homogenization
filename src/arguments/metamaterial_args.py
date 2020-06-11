@@ -52,3 +52,8 @@ def add_args(parser):
         action='store_true',
         default=False
     )
+    parser.add_argument(
+        '--body_force',
+        action='store_true',
+        default=False
+    )

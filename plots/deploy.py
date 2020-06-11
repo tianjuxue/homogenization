@@ -34,7 +34,7 @@ if __name__ == '__main__':
 
     fig = plt.figure(0)
     plt.tick_params(labelsize=14)
-    plt.plot(-0.1*np.concatenate((np.linspace(0, 0.7, 3), np.linspace(0.7, 1., 11))), (DNS_energy_com_pore0 - DNS_energy_com_pore0[0]), '-', color='blue', label='DNS ' + r'$\xi_a$')
+    plt.plot(-0.1*np.concatenate((np.linspace(0, 0.75, 6), np.linspace(0.75, 1., 11))), (DNS_energy_com_pore0 - DNS_energy_com_pore0[0]), '-', color='blue', label='DNS ' + r'$\xi_a$')
     plt.plot(np.linspace(0,  0.1, len(DNS_energy_ten_pore0)), (DNS_energy_ten_pore0 - DNS_energy_ten_pore0[0]), '-', color='blue', label='DNS ' + r'$\xi_a$')
     plt.plot(np.linspace(0,  -0.1, len(NN_energy_com_pore0)), (NN_energy_com_pore0 - NN_energy_com_pore0[0]), '--', color='blue', label='NN ' + r'$\xi_a$')
     plt.plot(np.linspace(0,  0.1, len(NN_energy_ten_pore0)), (NN_energy_ten_pore0 - NN_energy_ten_pore0[0]), '--', color='blue', label='NN ' + r'$\xi_a$')
@@ -45,7 +45,7 @@ if __name__ == '__main__':
 
     fig = plt.figure(1)
     plt.tick_params(labelsize=14)
-    plt.plot(-0.1*np.concatenate((np.linspace(0, 0.7, 3), np.linspace(0.7, 1., 11))), (DNS_force_com_pore0 - DNS_force_com_pore0[0]), '-', color='blue', label='DNS ' + r'$\xi_a$')
+    plt.plot(-0.1*np.concatenate((np.linspace(0, 0.75, 6), np.linspace(0.75, 1., 11))), (DNS_force_com_pore0 - DNS_force_com_pore0[0]), '-', color='blue', label='DNS ' + r'$\xi_a$')
     plt.plot(np.linspace(0,  0.1, len(DNS_force_ten_pore0)), (DNS_force_ten_pore0 - DNS_force_ten_pore0[0]), '-', color='blue', label='DNS ' + r'$\xi_a$')
     plt.plot(np.linspace(0,  -0.1, len(NN_force_com_pore0)), (NN_force_com_pore0 - NN_force_com_pore0[0]), '--', color='blue', label='NN ' + r'$\xi_a$')
     plt.plot(np.linspace(0,  0.1, len(NN_force_ten_pore0)), (NN_force_ten_pore0 - NN_force_ten_pore0[0]), '--', color='blue', label='NN ' + r'$\xi_a$')

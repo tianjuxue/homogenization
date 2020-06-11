@@ -44,7 +44,6 @@ def load_data_all(args, rm_dup=False, middle=False):
     args.input_dim = Xin.shape[1]
 
     print("\nTotal number of samples:", len(Xin))
-
     np.save('saved_data_sobol/Xin_H.npy', Xin)
     np.save('saved_data_sobol/Xout_H.npy', Xout)
 

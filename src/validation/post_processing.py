@@ -124,7 +124,6 @@ def run_single_paraview(args, points_ref, name, deform_info, pore_flag):
         else:
             u_avg.vector()[i] = uy
 
- 
     file = fa.File('plots/new_data/sol/post_processing/output/avg_' + name + '_size' + str(2*N) + '_' + 
                    deform_info + '_pore' + str(pore_flag) + '.pvd')
     u_avg.rename('u', 'u')
@@ -147,9 +146,11 @@ def run_single_recover(args, name, deform_info, pore_flag):
                            deform_info + '_pore' + str(pore_flag) + '.pvd')
     disp_sol.rename('u', 'u')
     file << disp_sol
+    print("mesh vertices", mesh.num_vertices())
 
 
 def run_recover_pvd(args):
+    # run_paraview_plot(args)
     run_single_recover(args, 'DNS', 'com', 0)
     run_single_recover(args, 'DNS', 'com', 2)
     run_single_recover(args, 'NN', 'com', 0)
@@ -159,4 +160,4 @@ def run_recover_pvd(args):
 if __name__ == '__main__':
     args = arguments.args
     run_recover_pvd(args)
-    # run_paraview_plot(args)
+    

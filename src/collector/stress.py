@@ -5,61 +5,8 @@ import matplotlib.pyplot as plt
 import os.path
 from ..pde.static import Metamaterial
 from .. import arguments
+from .driver_sobol import solver_fluctuation
 
-
-def solver_fluctuation(args):
-    args.c1, args.c2 = args.void_shape
-
-    pore_type = 0 if np.sum(np.absolute(args.void_shape)) < 1e-3  else 2 
-    mesh_name = 'plots/new_data/mesh/RVE_size' + str(args.n_cells) + '_pore' + str(pore_type) + '.xml'
-    if os.path.isfile(mesh_name):
-        mesh = fa.Mesh(mesh_name)
-    else:
-        mesh = None    
-
-    pde = Metamaterial(args, mesh)
-    boundary_fn = fa.Constant((0, 0))
-    energy_density = []
-
-    try:
-        pde.args.F_list = np.asarray(args.F_list_fixed)
-        u = pde.solve_problem(boundary_fn=None,
-                              boundary_point_fn=boundary_fn,
-                              boundary_fn_dic=None,
-                              initial_guess=None,
-                              enable_fast_solve=True,
-                              enable_dynamic_solve=True)
-        energy = pde.energy(u)
-        energy_density.append(energy / pow(args.n_cells * args.L0, 2))
-    except Exception as e:
-        print("\nDirect dr solve fails, try annealled dr solve...")
-        guess = fa.Function(pde.V).vector()
-        anneal_factors = np.linspace(0, 1, 11)
-        for i, factor in enumerate(anneal_factors):
-            print("   Now at step", i)
-            pde.args.F_list = factor * np.asarray(args.F_list_fixed)
-            try:
-                u = pde.solve_problem(boundary_fn=None,
-                                      boundary_point_fn=boundary_fn,
-                                      boundary_fn_dic=None,
-                                      initial_guess=guess,
-                                      enable_fast_solve=True,
-                                      enable_dynamic_solve=True)
-            except:
-                return None
-            guess = u.vector()
-            energy = pde.energy(u)
-            energy_density.append(energy / pow(args.n_cells * args.L0, 2))
-
-    if not os.path.isfile(mesh_name):
-        fa.File(mesh_name) << pde.mesh
-            
-    e11, e12, e21, e22 = args.def_grad
-    affine_fn = fa.Expression(('e11*x[0] + e12*x[1]', 'e21*x[0] + e22*x[1]'),
-                              e11=e11, e12=e12, e21=e21, e22=e22, degree=2)
-    result = fa.project(affine_fn + u, pde.V_non_periodic)
-    stress = pde.force(u)
-    return energy_density[-1], stress[1, 1]
 
 def run():
     n1 = 21

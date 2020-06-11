@@ -200,8 +200,8 @@ class Metamaterial(PDE):
         stress_21 = fa.assemble(fa.dot(first_pk_stress, self.normal)[0]*self.ds(4))
         stress_22 = fa.assemble(fa.dot(first_pk_stress, self.normal)[1]*self.ds(4))    
 
-        # Change log
-        stress_22 = fa.assemble(first_pk_stress[1, 1]*fa.dx)
+        if self.args.body_force:
+            stress_22 = fa.assemble(first_pk_stress[1, 1]*fa.dx)
 
         return np.array([[stress_11, stress_12], [stress_21, stress_22]])
 

@@ -224,7 +224,7 @@ class Generator(object):
         else:
             mesh = None
 
-        # mesh = fa.Mesh('plots/new_data/mesh/DNS_noise_size8_pore0_mao.xml')
+        # mesh = fa.Mesh('plots/new_data/mesh/DNS_noise_big_size16_pore0_mao.xml')
 
         pde = Metamaterial(self.args, mesh)
         if not os.path.isfile(mesh_name):

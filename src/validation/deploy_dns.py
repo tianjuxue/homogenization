@@ -11,7 +11,7 @@ def run_and_save(disp, pore_flag, name):
     print("\ndisp={}, pore_flag={}, name={}".format(disp, pore_flag, name))
     start = time.time()
     generator = Generator(args)
-    generator.args.relaxation_parameter = 0.2
+    generator.args.relaxation_parameter = 0.6
     generator.args.max_newton_iter = 2000
     generator.enable_fast_solve = False
     generator.args.n_cells = 16
@@ -26,7 +26,11 @@ def run_and_save(disp, pore_flag, name):
     if pore_flag == 0:
         generator.void_shape = np.array([-0., 0.])
         if disp < 0:
-            generator.anneal_factors = np.concatenate((np.linspace(0, 0.7, 3), np.linspace(0.7, 1., 11)))
+            generator.enable_fast_solve = True
+            # For force to be correct
+            generator.anneal_factors = np.concatenate((np.linspace(0, 0.75, 6), np.linspace(0.75, 1., 11)))
+            # For graphics, visually correct
+            # generator.anneal_factors = np.concatenate((np.linspace(0, 0.76, 7), np.linspace(0.76, 1., 51)))
     elif pore_flag == 1:
         generator.void_shape = np.array([-0.1, 0.1])
     elif pore_flag == 2:
@@ -45,10 +49,10 @@ def run_and_save(disp, pore_flag, name):
     time_elapsed = end - start
 
     deform_info = 'com' if disp < 0 else 'ten'
-    # np.save('plots/new_data/numpy/energy/' + name + '_energy_' + deform_info +
-    #         '_pore' + str(pore_flag) + '.npy', energy)
-    # np.save('plots/new_data/numpy/force/' + name + '_force_' + deform_info +
-    #         '_pore' + str(pore_flag) + '.npy', force)
+    np.save('plots/new_data/numpy/energy/' + name + '_energy_' + deform_info +
+            '_pore' + str(pore_flag) + '.npy', energy)
+    np.save('plots/new_data/numpy/force/' + name + '_force_' + deform_info +
+            '_pore' + str(pore_flag) + '.npy', force)
     # np.save('plots/new_data/numpy/time/' + name + '_time_' + deform_info +
     #         '_pore' + str(pore_flag) + '.npy', time_elapsed)
 
@@ -68,7 +72,6 @@ def run():
     run_and_save(disp=0.1, pore_flag=0, name='DNS')
     run_and_save(disp=0.1, pore_flag=2, name='DNS')
     run_and_save(disp=-0.1, pore_flag=0, name='DNS')
-    # run_and_save(disp=0.1, pore_flag=3, name='DNS')
 
 
 if __name__ == '__main__':

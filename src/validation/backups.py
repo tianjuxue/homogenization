@@ -112,8 +112,13 @@ else:
 
 
 # Remarks:
-# size8
+# size8 pore0
 # generator.anneal_factors = np.linspace(0.76, 1, 21)
 
 # size21 pore0
 # generator.anneal_factors = np.concatenate((np.linspace(0, 0.75, 6), np.linspace(0.75, 1., 11)))
+
+
+# regr = MLPRegressor(hidden_layer_sizes=(256,), activation='logistic', solver='adam', alpha=0,
+#                     batch_size=32, learning_rate_init=1e-2, max_iter=2000, random_state=1,
+#                     tol=1e-9, verbose=True, n_iter_no_change=1000).fit(self.X_train, self.y_train)

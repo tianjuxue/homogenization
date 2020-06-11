@@ -59,12 +59,8 @@ def solver_fluctuation(args):
     affine_fn = fa.Expression(('e11*x[0] + e12*x[1]', 'e21*x[0] + e22*x[1]'),
                               e11=e11, e12=e12, e21=e21, e22=e22, degree=2)
     result = fa.project(affine_fn + u, pde.V_non_periodic)
-
-    # file = fa.File("u.pvd")
-    # result.rename('u', 'u')
-    # file << result
-
-    return energy_density[-1]
+    stress = pde.force(u)
+    return energy_density[-1], stress[1, 1]
 
 
 def run_trial_sobol(args, path, index, parameters):
@@ -72,7 +68,7 @@ def run_trial_sobol(args, path, index, parameters):
         [parameters[0], parameters[1]], [parameters[2], parameters[3]]]
     args.def_grad = np.array(parameters[0:4])
     args.void_shape = np.array(parameters[4:6])
-    energy = solver_fluctuation(args)
+    energy, _ = solver_fluctuation(args)
     if energy is not None:
         save_fn(args,
                 'number_' + str(index),

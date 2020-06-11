@@ -115,8 +115,9 @@ class PDE(object):
                 if not convergence:
                     assert(False)
             else:
-                fa.solve(dE == 0, u, bcs, J=jacE,
-                         form_compiler_parameters=ffc_options)
+                # fa.solve(dE == 0, u, bcs, J=jacE,
+                #          form_compiler_parameters=ffc_options)
+                fa.solve(dE == 0, u, bcs, J=jacE)
         else:
             fa.solve(dE == 0, u, bcs, J=jacE,
                      form_compiler_parameters=ffc_options,
