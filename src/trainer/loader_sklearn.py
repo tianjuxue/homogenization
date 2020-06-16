@@ -60,7 +60,8 @@ class MLP(object):
         params = cv_summary['params']
         scores = cv_summary['mean_test_score']
         for i in range(len(params)):
-            print("param is {} and MSE_validation is {:.6f}".format(params[i], -scores[i]))
+            print("param is {} and MSE_validation is {:.6f}".format(
+                params[i], -scores[i]))
 
         self.model.set_params(**best_params)
         self.model.set_params(verbose=True)
@@ -81,7 +82,8 @@ class MLP(object):
     def model_exp(self):
         # regr = MLPRegressor(hidden_layer_sizes=(256,), activation='logistic', solver='adam', alpha=0,
         #                     batch_size=32, learning_rate_init=1e-2, max_iter=2000, random_state=1,
-        #                     tol=1e-9, verbose=True, n_iter_no_change=1000).fit(self.X_train, self.y_train)
+        # tol=1e-9, verbose=True, n_iter_no_change=1000).fit(self.X_train,
+        # self.y_train)
         regr = MLPRegressor(hidden_layer_sizes=(128,), activation='logistic', solver='adam', alpha=0,
                             batch_size=64, learning_rate_init=1e-2, max_iter=1000, random_state=1,
                             tol=1e-9, verbose=True, n_iter_no_change=1000).fit(self.X_train, self.y_train)
@@ -100,11 +102,21 @@ class PolyReg(object):
 
     def __init__(self, args, Xin, Xout):
         self.args = args
-        Xin = Xin - Xin.mean(0)
-        self.Xin = Xin
+        self.X_mean = Xin.mean(0)
+        self.Xin = Xin - self.X_mean
         self.Xout = Xout
         self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
             self.Xin, self.Xout, test_size=0.1, random_state=1)
+
+    @classmethod
+    def poly_features_flexible(cls, degree, X):
+        # TODO: Bad implementation
+        poly = PolynomialFeatures(degree)
+        transform_X = X[:, :-1]
+        category_X = X[:, -1:]
+        transform_X = poly.fit_transform(transform_X)
+        X_poly = np.concatenate((transform_X, category_X), axis=1)
+        return X_poly
 
     def polynomial_features(self, degree):
         category_training = self.X_train[:, -1:]
@@ -131,13 +143,15 @@ class PolyReg(object):
         print("Sklern polynomial regression degree {} training MSE {}, test MSE {}\n".format(
             self.degree, MSE_train, MSE_test))
 
+        pickle.dump(regr, open('saved_weights/poly.sav', 'wb'))
+
         return MSE_train, MSE_test
 
     def linear_regression_custom(self):
+        print(self.X_training_poly.shape[1])
         print(np.linalg.matrix_rank(self.X_training_poly))
         print(np.linalg.matrix_rank(
             np.matmul(self.X_training_poly.transpose(), self.X_training_poly)))
-        print(self.X_training_poly.shape[1])
 
         # Analytical form
         tmp = np.linalg.inv(
@@ -187,8 +201,12 @@ def polynomial_regression(args):
     np.save('plots/new_data/numpy/polynomial/poly_degree.npy',
             np.asarray(poly_degree))
 
+    # Run the best again
+    poly_model.polynomial_features(degree=10)
+    poly_model.linear_regression_sklearn()
+
 
 if __name__ == '__main__':
     args = arguments.args
-    MLP_regression(args)
-    # polynomial_regression(args)
+    # MLP_regression(args)
+    polynomial_regression(args)
