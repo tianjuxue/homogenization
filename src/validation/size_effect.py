@@ -9,7 +9,7 @@ import time
 
 
 def run_and_save(size, pore_flag):
-    print('\nsize is', size)
+    print('\nsize is {} for pore{}'.format(size, pore_flag))
     start = time.time()
     generator = Generator(args)   
     generator.args.relaxation_parameter = 0.6
@@ -23,12 +23,15 @@ def run_and_save(size, pore_flag):
     generator.pore_flag = pore_flag
  
     if pore_flag == 0:
-        generator.enable_fast_solve = True
+        # generator.enable_fast_solve = True
+        generator.enable_fast_solve = False
+        generator.args.relaxation_parameter = 0.2        
         generator.void_shape = np.array([-0., 0.])
         generator.anneal_factors = np.concatenate((np.linspace(0, 0.75, 6), np.linspace(0.75, 1., 11)))
         # generator.anneal_factors = np.concatenate((np.linspace(0, 0.76, 1), np.linspace(0.76, 1., 51)))
     else:
         generator.enable_fast_solve = False
+        generator.args.relaxation_parameter = 0.2
         generator.void_shape = np.array([-0.2, 0.2])
         generator.anneal_factors = np.linspace(0., 1, 21)
 
@@ -45,22 +48,21 @@ def run_and_save(size, pore_flag):
     return t_total, t_mesh
 
 
-def simulate():
-    # sizes = [21]
-    sizes = [16]
+def simulate(pore_flag):
+    sizes = [32]
     time_total = []
     time_mesh = []
     for size in sizes:
-        t_total, t_mesh = run_and_save(size, 0)
+        t_total, t_mesh = run_and_save(size, pore_flag)
         time_total.append(t_total)
         time_mesh.append(t_mesh)
 
     print("t_total", t_total)
     print("time_mesh", time_mesh)
 
-    np.save('plots/new_data/numpy/size_effect/sizes.npy', np.asarray(sizes))
-    np.save('plots/new_data/numpy/size_effect/time_total.npy', np.asarray(time_total))
-    np.save('plots/new_data/numpy/size_effect/time_mesh.npy', np.asarray(time_mesh))
+    # np.save('plots/new_data/numpy/size_effect/sizes_pore{}.npy'.format(pore_flag), np.asarray(sizes))
+    np.save('plots/new_data/numpy/size_effect/time_pore{}_size{}.npy'.format(pore_flag, sizes[0]), np.asarray(time_total))
+    # np.save('plots/new_data/numpy/size_effect/time_mesh.npy', np.asarray(time_mesh))
 
 
 def plot_results_time():
@@ -100,11 +102,28 @@ def plot_custom_force():
     plt.plot(np.linspace(0, -0.1, len(DNS_force_com_pore0)), (DNS_force_com_pore0 - DNS_force_com_pore0[0]), linestyle='--', marker='o', color='red')
 
 
+def report_time():
+    time_pore0_sizes20 = np.load('plots/new_data/numpy/size_effect/time_pore0_size20.npy')
+    time_pore2_sizes20 = np.load('plots/new_data/numpy/size_effect/time_pore2_size20.npy')
+    time_pore0_sizes32 = np.load('plots/new_data/numpy/size_effect/time_pore0_size32.npy')
+    time_pore2_sizes32 = np.load('plots/new_data/numpy/size_effect/time_pore2_size32.npy')
+    print(time_pore0_sizes20)
+    print(time_pore2_sizes20)
+    print(time_pore0_sizes32)
+    print(time_pore2_sizes32)
+
+
 def run():
-    # simulate()
+    # try:
+    #     simulate(0)
+    # except Exception as e:
+    #     print("hehe, fail")
+    simulate(0)    
+ 
+    # report_time()
     # plot_results_time()
-    plot_results_force()
-    plt.show()
+    # plot_results_force()
+    # plt.show()
 
 
 if __name__ == '__main__':

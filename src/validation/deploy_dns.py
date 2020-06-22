@@ -34,6 +34,16 @@ def run_and_save(disp, pore_flag, name):
     elif pore_flag == 1:
         generator.void_shape = np.array([-0.1, 0.1])
     elif pore_flag == 2:
+        # For graphics to be correct
+        generator.enable_fast_solve = False
+        generator.args.relaxation_parameter = 0.2
+        generator.anneal_factors = np.linspace(0, 1, 21)
+
+        # For force to be correct
+        # generator.enable_fast_solve = False
+        # generator.args.relaxation_parameter = 0.6
+        # generator.anneal_factors = np.linspace(0, 1, 21)
+
         generator.void_shape = np.array([-0.2, 0.2])
     else:
         # Shouldn't matter
@@ -49,10 +59,10 @@ def run_and_save(disp, pore_flag, name):
     time_elapsed = end - start
 
     deform_info = 'com' if disp < 0 else 'ten'
-    np.save('plots/new_data/numpy/energy/' + name + '_energy_' + deform_info +
-            '_pore' + str(pore_flag) + '.npy', energy)
-    np.save('plots/new_data/numpy/force/' + name + '_force_' + deform_info +
-            '_pore' + str(pore_flag) + '.npy', force)
+    # np.save('plots/new_data/numpy/energy/' + name + '_energy_' + deform_info +
+    #         '_pore' + str(pore_flag) + '.npy', energy)
+    # np.save('plots/new_data/numpy/force/' + name + '_force_' + deform_info +
+    #         '_pore' + str(pore_flag) + '.npy', force)
     # np.save('plots/new_data/numpy/time/' + name + '_time_' + deform_info +
     #         '_pore' + str(pore_flag) + '.npy', time_elapsed)
 
@@ -69,9 +79,9 @@ def run_and_save(disp, pore_flag, name):
 
 def run():
     run_and_save(disp=-0.1, pore_flag=2, name='DNS')
-    run_and_save(disp=0.1, pore_flag=0, name='DNS')
-    run_and_save(disp=0.1, pore_flag=2, name='DNS')
-    run_and_save(disp=-0.1, pore_flag=0, name='DNS')
+    # run_and_save(disp=0.1, pore_flag=0, name='DNS')
+    # run_and_save(disp=0.1, pore_flag=2, name='DNS')
+    # run_and_save(disp=-0.1, pore_flag=0, name='DNS')
 
 
 if __name__ == '__main__':

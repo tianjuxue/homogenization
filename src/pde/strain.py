@@ -21,7 +21,7 @@ def Invariants(A):
     I3 = fa.det(A)
     return [I1, I2, I3]
 
-def NeoHookeanEnergy(u, young_mod, poisson_ratio, return_stress=False, fluctuation=False, F_list=None):
+def NeoHookeanEnergy(u, young_modulus, poisson_ratio, return_stress=False, fluctuation=False, F_list=None):
 
     if poisson_ratio >= 0.5:
         raise ValueError(
@@ -29,10 +29,10 @@ def NeoHookeanEnergy(u, young_mod, poisson_ratio, return_stress=False, fluctuati
             .format(poisson_ratio))
 
     if fluctuation:
-        return NeoHookeanEnergyFluctuation(u, young_mod, poisson_ratio, return_stress, F_list)
+        return NeoHookeanEnergyFluctuation(u, young_modulus, poisson_ratio, return_stress, F_list)
 
-    shear_mod = young_mod / (2 * (1 + poisson_ratio))
-    bulk_mod = young_mod / (3 * (1 - 2*poisson_ratio))
+    shear_mod = young_modulus / (2 * (1 + poisson_ratio))
+    bulk_mod = young_modulus / (3 * (1 - 2*poisson_ratio))
     d = u.geometric_dimension()
     F = DeformationGradient(u)
     F = fa.variable(F)
@@ -67,10 +67,9 @@ def DeformationGradientFluctuation(v, F_list):
     I = fa.Identity(v.geometric_dimension())
     return fa.variable(I + grad_u)
 
-def NeoHookeanEnergyFluctuation(v, young_mod, poisson_ratio, return_stress, F_list):
- 
-    shear_mod = young_mod / (2 * (1 + poisson_ratio))
-    bulk_mod = young_mod / (3 * (1 - 2*poisson_ratio))
+def NeoHookeanEnergyFluctuation(v, young_modulus, poisson_ratio, return_stress, F_list):
+    shear_mod = young_modulus / (2 * (1 + poisson_ratio))
+    bulk_mod = young_modulus / (3 * (1 - 2*poisson_ratio))
     d = v.geometric_dimension()
     F = DeformationGradientFluctuation(v, F_list)
     F = fa.variable(F)

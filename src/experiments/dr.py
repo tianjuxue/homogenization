@@ -11,16 +11,19 @@ from .. import arguments
 
 
 def simulate_periodic(args):
+    args.n_cells = 2
     args.fluctuation = True
-    anneal_factors = np.linspace(0, 1, 2)
-    parameters = [0., 0., -0., -0.125, -0.2, 0.2]
+    anneal_factors = np.linspace(0, 1, 11)
+    parameters = [0., 0., -0., -0.125, -0.0, 0.0]
     def_grad = np.array(parameters[0:4])
     void_shape = np.array(parameters[4:6])
+    args.F_list_fixed = [[parameters[0], parameters[1]], [parameters[2], parameters[3]]]
     energy_density = solver_fluctuation(args, void_shape,  anneal_factors, def_grad)
     print(energy_density)
 
 
 def simulate_full(args):
+    args.n_cells = 4
     args.fluctuation = False
     anneal_factors = np.linspace(0, 1, 21)
     parameters = [0., 0., -0., -0.1, -0., 0.]
@@ -89,7 +92,7 @@ def solver_fluctuation(args, void_shape, anneal_factors, def_grad):
                                 boundary_fn_dic=None,
                                 initial_guess=guess,
                                 enable_fast_solve=True,
-                                enable_dynamic_solve=False)
+                                enable_dynamic_solve=True)
         guess = u.vector()
         energy = pde.energy(u)
         energy_density.append(energy / pow(args.n_cells * args.L0, 2))
@@ -110,8 +113,7 @@ if __name__ == '__main__':
     args = arguments.args
     args.relaxation_parameter = 0.1
     args.max_newton_iter = 1000
-    args.n_cells = 4
     args.enable_fast_solve = True
     args.gradient = False
     args.metamaterial_mesh_size = 15
-    simulate_full(args)
+    simulate_periodic(args)

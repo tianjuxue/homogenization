@@ -9,6 +9,7 @@ def plot_reg():
     poly_degree = np.load('plots/new_data/numpy/polynomial/poly_degree.npy')
     plt.plot(poly_degree, train_MSE, linestyle='--', marker='o', color='red')
     plt.plot(poly_degree, test_MSE, linestyle='--', marker='o', color='blue')
+    plt.plot(poly_degree, 7.67*1e-5*np.ones_like(poly_degree), color='black')
     # plt.xlabel("Polynomial Degree", fontsize=14)
     # plt.ylabel("MSE", fontsize=14)
     plt.tick_params(labelsize=14)

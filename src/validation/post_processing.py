@@ -4,6 +4,7 @@ import fenics as fa
 import sys
 import matplotlib.pyplot as plt
 from .. import arguments
+from ..pde.strain import NeoHookeanEnergy
 
 
 def vis_single(points_ref, c):
@@ -135,7 +136,7 @@ def run_paraview_plot(args):
     run_single_paraview(args, points_ref, 'DNS', 'com', 2)
 
 
-def run_single_recover(args, name, deform_info, pore_flag):
+def run_single_recover(args, name, deform_info, pore_flag, avg=False):
     # DNS/NN + com/ten + pore0/pore2 + size16, solutions recover
     mesh = fa.Mesh('plots/new_data/sol/post_processing/input/' + name + '_mesh_' +
                    deform_info + '_pore' + str(pore_flag) + '.xml')
@@ -150,14 +151,54 @@ def run_single_recover(args, name, deform_info, pore_flag):
 
 
 def run_recover_pvd(args):
-    # run_paraview_plot(args)
+    run_paraview_plot(args)
     run_single_recover(args, 'DNS', 'com', 0)
     run_single_recover(args, 'DNS', 'com', 2)
     run_single_recover(args, 'NN', 'com', 0)
     run_single_recover(args, 'NN', 'com', 2)
 
 
+def run_stress(args):
+    y_pos_DNS, P22_DNS = run_stress_single(args, 'DNS', 'com', 0)
+    y_pos_NN, P22_NN = run_stress_single(args, 'NN', 'com', 0)
+    plt.figure()
+    plt.plot(y_pos_DNS, P22_DNS, color='red')
+    plt.plot(y_pos_NN, P22_NN, color='blue')
+    # plt.plot(y_pos_DNS, P22_DNS, linestyle='--', marker='o', color='red')
+    # plt.plot(y_pos_NN, P22_NN, linestyle='--', marker='o', color='blue')
+    plt.show()
+
+
+def run_stress_single(args, name, deform_info, pore_flag):
+    mesh = fa.Mesh('plots/new_data/sol/post_processing/input/' + name + '_mesh_' +
+                   deform_info + '_pore' + str(pore_flag) + '.xml')
+    V = fa.VectorFunctionSpace(mesh, 'P', 1)
+    disp_sol = fa.Function(V, 'plots/new_data/sol/post_processing/input/' + name + '_sol_' +
+                           deform_info + '_pore' + str(pore_flag) + '.xml')
+
+    V_stress = fa.FunctionSpace(mesh, 'DG', 0)
+    _, stress = NeoHookeanEnergy(disp_sol, args.young_modulus, args.poisson_ratio, True)
+    stress22 = stress[1, 1]
+    stress22 = fa.project(stress22, V_stress)
+    x_pos = 4.
+    y_pos = np.linspace(0, 8., 100)
+    P22 = []
+    for yp in y_pos:
+        point = fa.Point((x_pos, yp))
+        P22.append(stress22(point))
+    P22 = np.asarray(P22)
+    print(P22)
+
+    file = fa.File('tmp/post_processing/' + name + '_stress_' +
+                           deform_info + '_pore' + str(pore_flag) + '.pvd')
+    stress22.rename('s', 's')
+    file << stress22
+
+    return y_pos, P22
+    
+
 if __name__ == '__main__':
     args = arguments.args
     run_recover_pvd(args)
+    # run_stress(args)
     
