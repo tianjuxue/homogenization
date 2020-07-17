@@ -29,6 +29,9 @@ def run_and_save(size, pore_flag):
         generator.void_shape = np.array([-0., 0.])
         generator.anneal_factors = np.concatenate((np.linspace(0, 0.75, 6), np.linspace(0.75, 1., 11)))
         # generator.anneal_factors = np.concatenate((np.linspace(0, 0.76, 1), np.linspace(0.76, 1., 51)))
+        
+        # To generate appendix figures
+        # generator.anneal_factors = np.concatenate((np.linspace(0, 0.7, 8), np.linspace(0.7, 1., 41)))
     else:
         generator.enable_fast_solve = False
         generator.args.relaxation_parameter = 0.2
@@ -49,7 +52,7 @@ def run_and_save(size, pore_flag):
 
 
 def simulate(pore_flag):
-    sizes = [32]
+    sizes = [16]
     time_total = []
     time_mesh = []
     for size in sizes:
@@ -103,14 +106,26 @@ def plot_custom_force():
 
 
 def report_time():
+    time_pore0_sizes16 = np.load('plots/new_data/numpy/size_effect/time_pore0_size16.npy')
+    time_pore2_sizes16 = np.load('plots/new_data/numpy/size_effect/time_pore2_size16.npy')
     time_pore0_sizes20 = np.load('plots/new_data/numpy/size_effect/time_pore0_size20.npy')
     time_pore2_sizes20 = np.load('plots/new_data/numpy/size_effect/time_pore2_size20.npy')
     time_pore0_sizes32 = np.load('plots/new_data/numpy/size_effect/time_pore0_size32.npy')
     time_pore2_sizes32 = np.load('plots/new_data/numpy/size_effect/time_pore2_size32.npy')
+
+    print(time_pore0_sizes16)
+    print(time_pore2_sizes16)
     print(time_pore0_sizes20)
     print(time_pore2_sizes20)
     print(time_pore0_sizes32)
     print(time_pore2_sizes32)
+
+    print(time_pore0_sizes16/16)
+    print(time_pore2_sizes16/20)
+    print(time_pore0_sizes20/16)
+    print(time_pore2_sizes20/20)
+    print(time_pore0_sizes32/16)
+    print(time_pore2_sizes32/20)
 
 
 def run():
@@ -118,9 +133,10 @@ def run():
     #     simulate(0)
     # except Exception as e:
     #     print("hehe, fail")
-    simulate(0)    
+    # simulate(0)    
+    # simulate(2)  
  
-    # report_time()
+    report_time()
     # plot_results_time()
     # plot_results_force()
     # plt.show()

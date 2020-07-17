@@ -1,6 +1,6 @@
 import numpy as np
 import os
-from .generator import Generator, GeneratorDummy
+from .generator import Generator
 from .. import arguments
 import fenics as fa
 import matplotlib.pyplot as plt
@@ -10,6 +10,7 @@ def compute_shear(generator):
     generator.void_shape = np.array([-0.2, 0.2])
     x_vals = np.linspace(-0.7, 0.7, 21)
     energy = []
+    # x_vals = [x_vals[4]]
     for x_val in x_vals:
         generator.args.F_list_fixed = [[0, x_val], [0., -0.125]]
         generator.def_grad = np.array([0, x_val, 0, -0.125])
@@ -20,16 +21,17 @@ def compute_shear(generator):
         print(generator.probe_all)
 
     energy = np.asarray(energy)
-    np.savez('plots/new_data/numpy/inspection/shear.npz',
-             H12=x_vals,
-             shear_energy=energy
-             )
+    # np.savez('plots/new_data/numpy/inspection/shear.npz',
+    #          H12=x_vals,
+    #          shear_energy=energy
+    #          )
 
 
 def compute_normal(generator):
     generator.void_shape = np.array([-0., 0.])
     x_vals = np.linspace(-0.08, 0.08, 11)
     energy = []
+    x_vals = np.asarray([x_vals[0], x_vals[5], x_vals[10]])
     for x_val in x_vals:
         generator.args.F_list_fixed = [[x_val, 0], [0., -0.125]]
         generator.def_grad = np.array([x_val, 0,  0, -0.125])
@@ -40,10 +42,10 @@ def compute_normal(generator):
         print(generator.probe_all)
 
     energy = np.asarray(energy)
-    np.savez('plots/new_data/numpy/inspection/normal.npz',
-             H11=x_vals,
-             normal_energy=energy
-             )
+    # np.savez('plots/new_data/numpy/inspection/normal.npz',
+    #          H11=x_vals,
+    #          normal_energy=energy
+    #          )
 
 
 def plot_shear():
@@ -78,16 +80,16 @@ if __name__ == '__main__':
 
     generator.args.relaxation_parameter = 0.05
     generator.args.max_newton_iter = 5000
-    generator.enable_fast_solve = False
+    generator.enable_fast_solve = True
     generator.args.n_cells = 2
     generator.args.metamaterial_mesh_size = 15
     generator.args.fluctuation = True
     generator.anneal_factors = np.linspace(0, 1, 11)
 
-    # compute_normal(generator)
-    # compute_shear(generator)
+    compute_normal(generator)
+    compute_shear(generator)
 
-    plot_normal()
-    plot_shear()
+    # plot_normal()
+    # plot_shear()
 
 

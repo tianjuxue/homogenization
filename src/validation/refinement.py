@@ -101,8 +101,6 @@ def plot_results():
     ax2.set_xscale('log')
     ax2.tick_params(labelsize=14)
 
-    plt.show()
-
 
 def get_error(pde1, pde2):
     V1 = pde1.V
@@ -126,11 +124,11 @@ def run(args):
     if run_simulation:
         ref(generator)
     plot_results()
-    # simulate(generator, 60)
+    simulate(generator, 60)
 
 
 if __name__ == '__main__':
     args = arguments.args
     np.set_printoptions(precision=6)
     run(args)
-
+    plt.show()

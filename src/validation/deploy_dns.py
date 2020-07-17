@@ -27,10 +27,10 @@ def run_and_save(disp, pore_flag, name):
         generator.void_shape = np.array([-0., 0.])
         if disp < 0:
             generator.enable_fast_solve = True
-            # For force to be correct
-            generator.anneal_factors = np.concatenate((np.linspace(0, 0.75, 6), np.linspace(0.75, 1., 11)))
-            # For graphics, visually correct
-            # generator.anneal_factors = np.concatenate((np.linspace(0, 0.76, 7), np.linspace(0.76, 1., 51)))
+            # For force and time to be correct
+            # generator.anneal_factors = np.concatenate((np.linspace(0, 0.75, 6), np.linspace(0.75, 1., 11)))
+            # For graphics to be correct
+            generator.anneal_factors = np.concatenate((np.linspace(0, 0.76, 7), np.linspace(0.76, 1., 51)))
     elif pore_flag == 1:
         generator.void_shape = np.array([-0.1, 0.1])
     elif pore_flag == 2:
@@ -39,7 +39,7 @@ def run_and_save(disp, pore_flag, name):
         generator.args.relaxation_parameter = 0.2
         generator.anneal_factors = np.linspace(0, 1, 21)
 
-        # For force to be correct
+        # For force and time to be correct
         # generator.enable_fast_solve = False
         # generator.args.relaxation_parameter = 0.6
         # generator.anneal_factors = np.linspace(0, 1, 21)
@@ -78,10 +78,10 @@ def run_and_save(disp, pore_flag, name):
 
 
 def run():
-    run_and_save(disp=-0.1, pore_flag=2, name='DNS')
+    # run_and_save(disp=-0.1, pore_flag=2, name='DNS')
     # run_and_save(disp=0.1, pore_flag=0, name='DNS')
     # run_and_save(disp=0.1, pore_flag=2, name='DNS')
-    # run_and_save(disp=-0.1, pore_flag=0, name='DNS')
+    run_and_save(disp=-0.1, pore_flag=0, name='DNS')
 
 
 if __name__ == '__main__':

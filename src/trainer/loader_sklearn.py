@@ -4,6 +4,7 @@ import numpy as np
 import argparse
 import sys
 import pickle
+import time
 import matplotlib.pyplot as plt
 from copy import deepcopy
 import logging
@@ -80,20 +81,25 @@ class MLP(object):
         print(self.model.intercepts_[1].shape)
 
     def model_exp(self):
+        print("start")
+        start = time.time()
+
         # regr = MLPRegressor(hidden_layer_sizes=(256,), activation='logistic', solver='adam', alpha=0,
         #                     batch_size=32, learning_rate_init=1e-2, max_iter=2000, random_state=1,
         # tol=1e-9, verbose=True, n_iter_no_change=1000).fit(self.X_train,
         # self.y_train)
         regr = MLPRegressor(hidden_layer_sizes=(128,), activation='logistic', solver='adam', alpha=0,
                             batch_size=64, learning_rate_init=1e-2, max_iter=1000, random_state=1,
-                            tol=1e-9, verbose=True, n_iter_no_change=1000).fit(self.X_train, self.y_train)
+                            tol=1e-9, verbose=False, n_iter_no_change=1000).fit(self.X_train, self.y_train)
 
         y_pred = regr.predict(self.X_test)
         MSE_test = mean_squared_error(self.y_test, y_pred)
         print(MSE_test)
-        np.save('saved_weights/coefs.npy', regr.coefs_)
-        np.save('saved_weights/intercepts.npy', regr.intercepts_)
-        pickle.dump(regr, open('saved_weights/model.sav', 'wb'))
+        end = time.time()
+        print("time spent {}".format(end - start))
+        # np.save('saved_weights/coefs.npy', regr.coefs_)
+        # np.save('saved_weights/intercepts.npy', regr.intercepts_)
+        # pickle.dump(regr, open('saved_weights/model.sav', 'wb'))
         # plt.plot(regr.loss_curve_)
         # plt.show()
 
@@ -175,8 +181,8 @@ def MLP_regression(args):
     Xin = np.load('saved_data_sobol/Xin.npy')
     Xout = np.load('saved_data_sobol/Xout.npy')
     mlp_model = MLP(args, Xin, Xout)
-    mlp_model.model_fit()
-    # mlp_model.cross_validation()
+    # mlp_model.model_fit()
+    mlp_model.model_exp()
 
 
 def polynomial_regression(args):
@@ -208,5 +214,5 @@ def polynomial_regression(args):
 
 if __name__ == '__main__':
     args = arguments.args
-    # MLP_regression(args)
-    polynomial_regression(args)
+    MLP_regression(args)
+    # polynomial_regression(args)
