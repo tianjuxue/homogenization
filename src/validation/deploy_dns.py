@@ -78,9 +78,9 @@ def run_and_save(disp, pore_flag, name):
 
 
 def run():
-    # run_and_save(disp=-0.1, pore_flag=2, name='DNS')
-    # run_and_save(disp=0.1, pore_flag=0, name='DNS')
-    # run_and_save(disp=0.1, pore_flag=2, name='DNS')
+    run_and_save(disp=-0.1, pore_flag=2, name='DNS')
+    run_and_save(disp=0.1, pore_flag=0, name='DNS')
+    run_and_save(disp=0.1, pore_flag=2, name='DNS')
     run_and_save(disp=-0.1, pore_flag=0, name='DNS')
 
 

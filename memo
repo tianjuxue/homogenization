@@ -1,0 +1,3 @@
+RVE data collection采用了dr solver
+RVE inspection采用的是newton solver
+DNS全部采用newton solver

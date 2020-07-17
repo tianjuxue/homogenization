@@ -25,72 +25,7 @@ class SinExpression(fa.UserExpression):
     def value_shape(self):
         return (2,)
 
-
-class SinPoreExpression(fa.UserExpression):
-
-    def __init__(self, args, param):
-        # Construction method of base class has to be called first
-        super(SinPoreExpression, self).__init__()
-        self.args = args
-        self.amplitude = param * self.args.L0 / 2
-
-    def eval(self, values, x):
-
-        L = self.args.L0 / 2
-        A = self.amplitude
-        region_id = self.get_region_id(x)
-        center = self.get_center(region_id)
-        sign = self.get_sign(region_id)
-
-        delta_x = x - center
-        delta_x_tmp = delta_x.copy()
-
-        delta_x[0] = delta_x_tmp[0] * sign * A / L * \
-            fa.sin(fa.pi / (2 * L) * (L - delta_x_tmp[1]))
-        delta_x[1] = delta_x_tmp[1] * \
-            (-sign * A / L * fa.sin(fa.pi / (2 * L) * (L - delta_x_tmp[0])))
-
-        values[0] = delta_x[0]
-        values[1] = delta_x[1]
-
-    def get_sign(self, region_id):
-        return region_id % 2 * 2 - 1
-
-    def value_shape(self):
-        return (2,)
-
-    def get_center(self, region_id):
-        center = np.array([0., 0.])
-
-        if region_id == 0:
-            center[0] = self.args.L0 / 2
-            center[1] = self.args.L0 / 2
-        elif region_id == 1:
-            center[0] = self.args.L0 / 2 + self.args.L0
-            center[1] = self.args.L0 / 2
-        elif region_id == 2:
-            center[0] = self.args.L0 / 2 + self.args.L0
-            center[1] = self.args.L0 / 2 + self.args.L0
-        elif region_id == 3:
-            center[0] = self.args.L0 / 2
-            center[1] = self.args.L0 / 2 + self.args.L0
-        else:
-            Exception(
-                "region_id should be 0, 1, 2 or 3 but got {}".format(region_id))
-
-        return center
-
-    def get_region_id(self, x):
-        if (x[0] < self.args.L0 and x[1] < self.args.L0):
-            return 0
-        elif (x[0] > self.args.L0 and x[1] < self.args.L0):
-            return 1
-        elif (x[0] > self.args.L0 and x[1] > self.args.L0):
-            return 2
-        else:
-            return 3
-
-
+ 
 class Generator(object):
     def __init__(self, args):
         self.args = args
@@ -157,7 +92,6 @@ class Generator(object):
 
             if  (pde.args.F_list[0][0] < 0 or pde.args.F_list[1][1] < 0) and guide:
                 # print("   Start guidance")
-                # sin_pore_exp = SinPoreExpression(self.args, 0.2)
                 sin_exp = SinExpression(self.args, probe_value / max_amp)
                 if i < 2:
                     guess = fa.interpolate(sin_exp, pde.V).vector()

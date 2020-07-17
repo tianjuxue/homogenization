@@ -1,3 +1,5 @@
+'''这个文件是一个独立的应用
+'''
 import fenics as fa
 import math
 import torch

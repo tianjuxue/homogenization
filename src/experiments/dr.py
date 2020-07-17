@@ -1,3 +1,5 @@
+'''这个文件测试了dr solver对于RVE和DNS的应用
+'''
 import numpy as np
 import os
 import fenics as fa
@@ -17,8 +19,10 @@ def simulate_periodic(args):
     parameters = [0., 0., -0., -0.125, -0.0, 0.0]
     def_grad = np.array(parameters[0:4])
     void_shape = np.array(parameters[4:6])
-    args.F_list_fixed = [[parameters[0], parameters[1]], [parameters[2], parameters[3]]]
-    energy_density = solver_fluctuation(args, void_shape,  anneal_factors, def_grad)
+    args.F_list_fixed = [[parameters[0], parameters[1]],
+                         [parameters[2], parameters[3]]]
+    energy_density = solver_fluctuation(
+        args, void_shape,  anneal_factors, def_grad)
     print(energy_density)
 
 
@@ -29,7 +33,8 @@ def simulate_full(args):
     parameters = [0., 0., -0., -0.1, -0., 0.]
     def_grad = np.array(parameters[0:4])
     void_shape = np.array(parameters[4:6])
-    energy_density, force = solver_disp(args, void_shape, anneal_factors, def_grad, return_force=True)
+    energy_density, force = solver_disp(
+        args, void_shape, anneal_factors, def_grad, return_force=True)
     force = np.asarray([f[1][1] for f in force]) / (args.n_cells * args.L0)
     # np.save('plots/new_data/numpy/size_effect/DNS_force_com_pore0_size' + str(args.n_cells) + '_dr.npy', force)
 
@@ -76,6 +81,7 @@ def solver_disp(args, void_shape, anneal_factors, def_grad, return_force=False):
 
     return energy_density
 
+
 def solver_fluctuation(args, void_shape, anneal_factors, def_grad):
     args.c1, args.c2 = void_shape
     pde = Metamaterial(args)
@@ -85,14 +91,14 @@ def solver_fluctuation(args, void_shape, anneal_factors, def_grad):
 
     energy_density = []
     for i, factor in enumerate(anneal_factors):
-        print("   Now at step", i) 
-        pde.args.F_list =  factor * np.asarray(args.F_list_fixed)
+        print("   Now at step", i)
+        pde.args.F_list = factor * np.asarray(args.F_list_fixed)
         u = pde.solve_problem(boundary_fn=None,
-                                boundary_point_fn=boundary_fn,
-                                boundary_fn_dic=None,
-                                initial_guess=guess,
-                                enable_fast_solve=True,
-                                enable_dynamic_solve=True)
+                              boundary_point_fn=boundary_fn,
+                              boundary_fn_dic=None,
+                              initial_guess=guess,
+                              enable_fast_solve=True,
+                              enable_dynamic_solve=True)
         guess = u.vector()
         energy = pde.energy(u)
         energy_density.append(energy / pow(args.n_cells * args.L0, 2))

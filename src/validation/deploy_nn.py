@@ -100,43 +100,6 @@ def manual_nn(network, x):
     return x2[0]
 
 
-def manual_gpr(network, C_list):
-    result0 = 0
-    result1 = 0
-    result2 = 0
-    result3 = 0
-
-    for i, x in enumerate(X_train[0:900]):
-        tmp = (x[0] / l[0] - C_list[0] / l[0])**2 + \
-              (x[1] / l[1] - C_list[1] / l[1])**2 + \
-              (x[2] / l[2] - C_list[2] / l[2])**2 + \
-              (x[3] / l[3] - C_list[3] / l[3])**2
-        result0 += sigma_f**2 * ufl.operators.exp(-0.5 * tmp) * v[i]
-
-    # for i, x in enumerate(X_train[900:1800]):
-    #     tmp = (x[0] / l[0] - C_list[0] / l[0])**2 + \
-    #           (x[1] / l[1] - C_list[1] / l[1])**2 + \
-    #           (x[2] / l[2] - C_list[2] / l[2])**2 + \
-    #           (x[3] / l[3] - C_list[3] / l[3])**2
-    #     result1 += sigma_f**2 * ufl.operators.exp(-0.5 * tmp) * v[i + 900]
-
-    # for i, x in enumerate(X_train[1800:2700]):
-    #     tmp = (x[0] / l[0] - C_list[0] / l[0])**2 + \
-    #           (x[1] / l[1] - C_list[1] / l[1])**2 + \
-    #           (x[2] / l[2] - C_list[2] / l[2])**2 + \
-    #           (x[3] / l[3] - C_list[3] / l[3])**2
-    #     result2 += sigma_f**2 * ufl.operators.exp(-0.5 * tmp) * v[i + 1800]
-
-    # for i, x in enumerate(X_train[2700:]):
-    #     tmp = (x[0] / l[0] - C_list[0] / l[0])**2 + \
-    #           (x[1] / l[1] - C_list[1] / l[1])**2 + \
-    #           (x[2] / l[2] - C_list[2] / l[2])**2 + \
-    #           (x[3] / l[3] - C_list[3] / l[3])**2
-    #     result3 += sigma_f**2 * ufl.operators.exp(-0.5 * tmp) * v[i + 2700]
-
-    return result0 + result1 + result2 + result3
-
-
 def get_energy(u, pore_flag, network, V):
     # Kinematics
     d = u.geometric_dimension()
@@ -163,10 +126,7 @@ def get_energy(u, pore_flag, network, V):
     for i in range(len(C_list)):
         C_list[i] -= shift[i]
 
-    # change to manual_nn for NN
-    # change to manual_gpr for GPR
     energy = manual_nn(network, C_list)
-    # energy = manual_gpr(network, C_list)
     stress = diff(energy, F)
     return energy, stress
 
@@ -342,15 +302,4 @@ if __name__ == '__main__':
     # set_log_level(20)
     run()
     # run_and_save(np.linspace(0, 1, 11), disp=-0.1, pore_flag=3, name='NN')
-
-    # save_weights()
-
-    # # GPR related
-    # params = np.load('plots/new_data/numpy/gpr/para.npz')
-    # l = params['l']
-    # sigma_f = params['sigma_f']
-    # X_train = params['X_train']
-    # v = params['v']
-    # run()
-    # energy, force, u, _ = homogenization(args, disp=-0.1, pore_flag=2)
-    # # run_and_save(np.linspace(0, 1, 11), disp=-0.14, pore_flag=0, name='NN',file=None)
+ 

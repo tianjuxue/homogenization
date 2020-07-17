@@ -1,3 +1,5 @@
+'''这个文件主要是作local rotational feature的图，参加paper的appendix
+'''
 import numpy as np
 import math
 import matplotlib.pyplot as plt

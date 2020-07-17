@@ -18,15 +18,6 @@ def get_features_C(Xin):
 
 
 def load_data_all(args, rm_dup=False, middle=False):
-
-    DATA_PATH_normal = 'saved_data_normal'
-    DATA_PATH_middle = 'saved_data_middle'
-    DATA_PATH_shear = 'saved_data_shear'
-
-    # DATA_PATH_normal = 'saved_data_pore0'
-    # DATA_PATH_middle = 'saved_data_pore1'
-    # DATA_PATH_shear = 'saved_data_pore2'
-
     DATA_PATH_normal = 'saved_data_pore0_sobol_dr'
     DATA_PATH_shear = 'saved_data_pore2_sobol_dr'
 

@@ -1,3 +1,5 @@
+'''这个文件是从Sheng Mao那里拿过来的gmesh的demo
+'''
 from math import sqrt, pi, sin, cos
 import numpy as np
 import os
