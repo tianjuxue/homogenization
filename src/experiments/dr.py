@@ -122,4 +122,5 @@ if __name__ == '__main__':
     args.enable_fast_solve = True
     args.gradient = False
     args.metamaterial_mesh_size = 15
-    simulate_periodic(args)
+    # simulate_periodic(args)
+    simulate_full(args)
